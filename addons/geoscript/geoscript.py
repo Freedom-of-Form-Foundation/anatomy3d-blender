@@ -2,6 +2,7 @@
 import bpy
 
 from .types import *
+from .math import *
 
 class GeometryFunction():
     """Generate geometry node trees. Corresponds to a Geometry Nodes tree."""
@@ -110,7 +111,12 @@ class ExampleFunction(GeometryFunction):
         variable4 = 4.0 + variable2
         variable5 = variable + (3.0 + 2.0) * variable
 
-        vector2 = vector1 + vector1
+        vector2 = 2.0 * vector1
+        
+        variable6 = vector2.y + variable3
+        variable7 = vector2.x + 2.0
+        
+        variable8 = clamp(min(multiply_add(variable4, variable3, variable5), variable2))
         
         
 
