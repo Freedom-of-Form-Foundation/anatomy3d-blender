@@ -3,7 +3,7 @@
 from .abstract_socket import AbstractSocket
 from .abstract_tensor import AbstractTensor
 from .scalar import Scalar
-from .vector3 import Vector
+from .vector3 import Vector3
 
-__all__ = ["AbstractSocket", "AbstractTensor", "Scalar", "Vector"]
+__all__ = ["AbstractSocket", "AbstractTensor", "Scalar", "Vector3"]
 

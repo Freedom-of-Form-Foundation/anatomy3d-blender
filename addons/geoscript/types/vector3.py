@@ -6,7 +6,7 @@ from .abstract_socket import AbstractSocket
 from .abstract_tensor import AbstractTensor
 from .scalar import Scalar
 
-class Vector(AbstractTensor):
+class Vector3(AbstractTensor):
     """A 3D vector object in Geoscript."""
     
     def __init__(self, node_tree: bpy.types.NodeTree = None, socket_reference: bpy.types.NodeSocket = None, layer: int = 0):
@@ -20,7 +20,7 @@ class Vector(AbstractTensor):
         
         input.node_tree.links.new(left.socket_reference, math_node.inputs[0])
         
-        return Vector(input.node_tree, math_node.outputs[0], layer)
+        return Vector3(input.node_tree, math_node.outputs[0], layer)
     
     @staticmethod
     def math_operation_binary(left, right, operation: str = 'ADD', use_clamp: bool = False):
@@ -32,7 +32,7 @@ class Vector(AbstractTensor):
             left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
             left.node_tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Vector(left.node_tree, math_node.outputs[0], layer)
+            return Vector3(left.node_tree, math_node.outputs[0], layer)
         
         elif isinstance(right, float):
             #math_node = left.node_tree.nodes.new('ShaderNodeVectorMath')
@@ -42,7 +42,7 @@ class Vector(AbstractTensor):
             
             left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
             
-            return Vector(left.node_tree, math_node.outputs[0], layer)
+            return Vector3(left.node_tree, math_node.outputs[0], layer)
         
         elif isinstance(left, float):
             #math_node = right.node_tree.nodes.new('ShaderNodeVectorMath')
@@ -52,7 +52,7 @@ class Vector(AbstractTensor):
             
             right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Vector(right.node_tree, math_node.outputs[0], layer)
+            return Vector3(right.node_tree, math_node.outputs[0], layer)
         
         else:
             return NotImplemented
