@@ -38,7 +38,7 @@ class Vector3(AbstractTensor):
             #math_node = left.node_tree.nodes.new('ShaderNodeVectorMath')
             math_node, layer = left.new_node([left], 'ShaderNodeVectorMath')
             math_node.operation = operation
-            math_node.inputs[1].default_value = right
+            math_node.inputs[3].default_value = right
             
             left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
             
@@ -48,7 +48,7 @@ class Vector3(AbstractTensor):
             #math_node = right.node_tree.nodes.new('ShaderNodeVectorMath')
             math_node, layer = right.new_node([right], 'ShaderNodeVectorMath')
             math_node.operation = operation
-            math_node.inputs[0].default_value = left
+            math_node.inputs[3].default_value = left
             
             right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
             
@@ -56,3 +56,38 @@ class Vector3(AbstractTensor):
         
         else:
             return NotImplemented
+        
+    # Multiply:
+    def __mul__(self, other):
+        return NotImplemented
+    
+    def __rmul__(self, other):
+        if isinstance(other, (float, Scalar)):
+            return self.math_operation_binary(self, other, operation = 'SCALE');
+        else:
+            return NotImplemented
+    
+    # Component getters:
+    def check_or_create_separation_node(self):
+        if not hasattr(self, 'separate_xyz_node'):
+            separate_xyz_node, layer = self.new_node([self], 'ShaderNodeSeparateXYZ')
+            self.separate_xyz_node = separate_xyz_node
+            self.separate_xyz_layer = layer
+            
+            self.node_tree.links.new(self.socket_reference, separate_xyz_node.inputs[0])
+    
+    @property
+    def x(self):
+        self.check_or_create_separation_node()
+        return Scalar(self.node_tree, self.separate_xyz_node.outputs[0], self.separate_xyz_layer)
+    
+    @property
+    def y(self):
+        self.check_or_create_separation_node()
+        return Scalar(self.node_tree, self.separate_xyz_node.outputs[1], self.separate_xyz_layer)
+    
+    @property
+    def z(self):
+        self.check_or_create_separation_node()
+        return Scalar(self.node_tree, self.separate_xyz_node.outputs[2], self.separate_xyz_layer)
+
