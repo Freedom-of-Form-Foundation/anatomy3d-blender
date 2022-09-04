@@ -390,4 +390,4 @@ class ExampleFunction(GeometryFunction):
         vector2 = vector1 + vector1
         
         
-test_geometry_modifier = ExampleFunction('test_geometry_modifier')
+
