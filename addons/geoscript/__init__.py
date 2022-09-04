@@ -25,7 +25,7 @@ class GeoscriptTestingOperator(bpy.types.Operator):
     bl_label = "Run GeoScript test functions"
 
     def execute(self, context):
-        test_geometry_modifier = ExampleFunction('test_geometry_modifier')
+        test_geometry_modifier = geoscript.ExampleFunction('test_geometry_modifier')
         return {'FINISHED'}
 
 

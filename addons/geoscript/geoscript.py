@@ -1,11 +1,12 @@
 #!/usr/bin/python3
+
 import bpy
 
 from .types import *
 from .math import *
 
 class GeometryFunction():
-    """Generate geometry node trees. Corresponds to a Geometry Nodes tree."""
+    """Generate geometry node trees. Corresponds to a GeometryNodeTree."""
     
     def __init__(self, name: str):
         # Get the node tree. If it doesn't yet exist, create a new tree:
@@ -28,9 +29,15 @@ class GeometryFunction():
         # the user changed them.
 
         self.input_counter = 0
+        self.output_counter = 0
+        self.output_layer = 0
         
         self.group_input = self.node_tree.nodes.new('NodeGroupInput')
         self.group_output = self.node_tree.nodes.new('NodeGroupOutput')
+    
+    def __shift_output_node(self, layer):
+        if layer > self.output_layer:
+            self.group_output.location = (200.0 * layer, 0.0)
     
     # Adding group inputs:
     def InputGeometry(self):
@@ -57,19 +64,111 @@ class GeometryFunction():
     
     # Adding group outputs:
     def OutputGeometry(self):
+        self.output_counter += 1
         return self.node_tree.outputs.new('NodeSocketGeometry', 'Geometry')
     
-    def OutputVector(self, variable, name: str):
-        return
+    
+    def OutputBoolean(
+            self,
+            variable,
+            name: str,
+            tooltip: str = '',
+            attribute_domain: str = '',
+            default_attribute_name: str = '',
+            default_value: bool = False,
+            min_value: float = float('-inf'),
+            max_value: float = float('inf')):
+        
+        output = self.node_tree.outputs.new('NodeSocketFloat', name)
+        output.description = tooltip
+        output.attribute_domain = attribute_domain
+        output.default_attribute_name = default_attribute_name
+        output.default_value = default_value
+        
+        self.node_tree.links.new(
+            variable.socket_reference,
+            self.group_output.inputs[self.output_counter])
+        
+        self.output_counter += 1
+        
+        self.__shift_output_node(variable.layer + 1)
+        
+        return output
+
+    
+    def OutputFloat(
+            self,
+            variable,
+            name: str,
+            tooltip: str = '',
+            attribute_domain: str = '',
+            default_attribute_name: str = '',
+            default_value: float = 0.0,
+            min_value: float = float('-inf'),
+            max_value: float = float('inf')):
+        
+        output = self.node_tree.outputs.new('NodeSocketFloat', name)
+        output.description = tooltip
+        output.attribute_domain = attribute_domain
+        output.default_attribute_name = default_attribute_name
+        output.default_value = default_value
+        output.min_value = min_value
+        output.max_value = max_value
+        
+        self.node_tree.links.new(
+            variable.socket_reference,
+            self.group_output.inputs[self.output_counter])
+        
+        self.output_counter += 1
+        
+        self.__shift_output_node(variable.layer + 1)
+        
+        return output
+
+
+    def OutputVector(
+            self,
+            variable,
+            name: str,
+            tooltip: str = '',
+            attribute_domain: str = '',
+            default_attribute_name: str = '',
+            default_value = [0.0, 0.0, 0.0],
+            min_value: float = float('-inf'),
+            max_value: float = float('inf')):
+        
+        output = self.node_tree.outputs.new('NodeSocketVector', name)
+        output.description = tooltip
+        output.attribute_domain = attribute_domain
+        output.default_attribute_name = default_attribute_name
+        
+        if len(default_value) != 3:
+            raise ValueError("default_value is not a vector3.")
+        
+        for i in range(0, 2):
+            output.default_value[i] = default_value[i]
+        
+        output.min_value = min_value
+        output.max_value = max_value
+        
+        self.node_tree.links.new(
+            variable.socket_reference,
+            self.group_output.inputs[self.output_counter])
+        
+        self.output_counter += 1
+        
+        self.__shift_output_node(variable.layer + 1)
+        
+        return output
     
     # Built in attributes (menu 'Input'):
     def position(self):
         position = self.node_tree.nodes.new('GeometryNodeInputPosition')
-        return Vector3(self.node_tree, position.outputs[0])
+        return Vector(self.node_tree, position.outputs[0])
     
     def normal(self):
         normal = self.node_tree.nodes.new('GeometryNodeInputNormal')
-        return Vector3(self.node_tree, normal.outputs[0])
+        return Vector(self.node_tree, normal.outputs[0])
     
     def radius(self):
         radius = self.node_tree.nodes.new('GeometryNodeInputRadius')
@@ -118,5 +217,12 @@ class ExampleFunction(GeometryFunction):
         
         variable8 = clamp(min(multiply_add(variable4, variable3, variable5), variable2))
         
+        self.OutputFloat(variable8, 'Float Output Name', attribute_domain = 'POINT', default_value = 0.5)
         
+        
+        
+        
+
+
+
 
