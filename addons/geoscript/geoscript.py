@@ -48,7 +48,7 @@ class GeometryFunction():
     def InputVector(self, name: str):
         input_vector = self.node_tree.inputs.new('NodeSocketVector', name)
         
-        socket = Vector(self.node_tree, self.group_input.outputs[self.input_counter])
+        socket = Vector3(self.node_tree, self.group_input.outputs[self.input_counter])
         
         self.input_counter += 1
         
@@ -64,11 +64,11 @@ class GeometryFunction():
     # Built in attributes (menu 'Input'):
     def position(self):
         position = self.node_tree.nodes.new('GeometryNodeInputPosition')
-        return Vector(self.node_tree, position.outputs[0])
+        return Vector3(self.node_tree, position.outputs[0])
     
     def normal(self):
         normal = self.node_tree.nodes.new('GeometryNodeInputNormal')
-        return Vector(self.node_tree, normal.outputs[0])
+        return Vector3(self.node_tree, normal.outputs[0])
     
     def radius(self):
         radius = self.node_tree.nodes.new('GeometryNodeInputRadius')
