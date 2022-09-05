@@ -18,7 +18,7 @@ class Scalar(AbstractTensor):
         math_node.operation = operation
         math_node.use_clamp = use_clamp
         
-        input.node_tree.links.new(left.socket_reference, math_node.inputs[0])
+        input.node_tree.links.new(input.socket_reference, math_node.inputs[0])
         
         return Scalar(input.node_tree, math_node.outputs[0], layer)
     
