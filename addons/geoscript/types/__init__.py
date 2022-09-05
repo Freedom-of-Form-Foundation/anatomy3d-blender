@@ -5,5 +5,6 @@ from .abstract_tensor import AbstractTensor
 from .boolean import Boolean
 from .scalar import Scalar
 from .vector3 import Vector3
+from .geometry import Geometry
 
-__all__ = ["AbstractSocket", "AbstractTensor", "Boolean", "Scalar", "Vector3"]
+__all__ = ["AbstractSocket", "AbstractTensor", "Boolean", "Scalar", "Vector3", "Geometry"]

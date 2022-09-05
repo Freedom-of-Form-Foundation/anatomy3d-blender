@@ -40,9 +40,14 @@ class GeometryFunction():
             self.group_output.location = (200.0 * layer, 0.0)
     
     # Adding group inputs:
-    def InputGeometry(self):
+    def InputGeometry(self, name: str = 'Geometry'):
+        input_geometry = self.node_tree.inputs.new('NodeSocketGeometry', name)
+        
+        socket = Geometry(self.node_tree, self.group_input.outputs[self.input_counter])
+        
         self.input_counter += 1
-        return self.node_tree.inputs.new('NodeSocketGeometry', 'Geometry')
+        
+        return socket
     
     def InputFloat(self, name: str):
         input_float = self.node_tree.inputs.new('NodeSocketFloat', name)
@@ -216,6 +221,8 @@ class ExampleFunction(GeometryFunction):
         variable7 = vector2.x + 2.0
         
         variable8 = clamp(min(multiply_add(variable4, variable3, variable5), variable2))
+        
+        geometry2 = input.move_vertices(offset = vector2)
         
         self.OutputFloat(variable8, 'Float Output Name', attribute_domain = 'POINT', default_value = 0.5)
         

@@ -21,6 +21,9 @@ class AbstractSocket():
         # First calculate which is the rightmost layer of the input sockets:
         max_layer = 0
         for socket in input_list:
+            if socket is None:
+                continue
+            
             if not isinstance(socket, AbstractSocket):
                 raise TypeError("Socket inside socket list is not an instance of AbstractSocket, but of {}. This is a bug, please report to the developers.".format(socket.__class__))
             
@@ -33,4 +36,10 @@ class AbstractSocket():
         new_node.location = (200.0 * new_layer, 0.0)
         
         return (new_node, new_layer)
-
+    
+    @staticmethod
+    def add_link_with_typecheck(socket, node: bpy.types.Node, input_index: int, type_check):
+        if isinstance(socket, type_check):
+            socket.node_tree.links.new(socket.socket_reference, node.inputs[input_index])
+        elif socket is not None:
+            raise TypeError("Argument 'position' (of type Vector3) doesn't support object of type {}.".format(socket.__class__))
