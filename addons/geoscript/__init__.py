@@ -26,6 +26,7 @@ class GeoscriptTestingOperator(bpy.types.Operator):
 
     def execute(self, context):
         test_geometry_modifier = geoscript.ExampleFunction('test_geometry_modifier')
+        test_normal_distribution = geoscript.NormalDistribution('common.normal_distribution')
         return {'FINISHED'}
 
 
