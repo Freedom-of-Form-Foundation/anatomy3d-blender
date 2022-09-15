@@ -2,6 +2,8 @@
 
 import bpy
 
+
+
 class AbstractSocket():
     """Any type of output inside a node tree.
     
@@ -21,12 +23,43 @@ class AbstractSocket():
         self.layer = layer
     
     @staticmethod
+    def get_bl_idnames():
+        """Returns a list of Blender socket types that this class represents.
+        
+        Returns:
+            List of strings corresponding to Blender Geometry Nodes socket
+            types.
+        """
+        return []
+    
+    @staticmethod
+    def allowed_const_types(name: str):
+        allowed_const_types = {
+            'CUSTOM': None,
+            'VALUE': float,
+            'INT': int,
+            'BOOLEAN': bool,
+            'VECTOR': None,
+            'STRING': str,
+            'RGBA': None,
+            'SHADER': None,
+            'OBJECT': None,
+            'IMAGE': None,
+            'GEOMETRY': None,
+            'COLLECTION': None,
+            'TEXTURE': None,
+            'MATERIAL': None
+        }
+
+        return allowed_const_types[name]
+    
+    @staticmethod
     def __get_node_tree(socket_list) -> bpy.types.GeometryNodeTree:
         """Extracts the Blender node tree from a list of AbstractSockets.
         
         Extracts the bpy.types.GeometryNodeTree from a list of AbstractSockets,
-        and ensures that all AbstractSockets in the list belong to
-        that GeometryNodeTree. This prevents errors related to connecting nodes
+        and ensures that all AbstractSockets in the list belong to that
+        GeometryNodeTree. This prevents errors related to connecting nodes
         belonging to different node trees, which is impossible.
         
         Args:
@@ -124,6 +157,7 @@ class AbstractSocket():
         
         return (new_node, new_layer)
     
+    # DEPRECATED:
     @staticmethod
     def add_link_with_typecheck(
             socket,
@@ -147,4 +181,90 @@ class AbstractSocket():
         elif socket is not None:
             raise TypeError("Argument 'position' (of type Vector3) doesn't"
                 " support object of type {}.".format(socket.__class__))
+    
+    @staticmethod
+    def connect_argument(node_tree, socket, index: int, node: bpy.types.Node):
+        """Connect a socket or constant to a node input.
+        
+        Args:
+            socket:
+                The AbstractSocket or constant value that is to be linked. Can
+                be None, in which case it is skipped.
+            node:
+                The Blender node that is to be linked to.
+            input_index:
+                The input index of node that is to be connected to. 0 refers
+                to the first input of the node.
+        
+        Raises:
+            TypeError:
+                The object in input_list cannot connect to the node's socket,
+                due to being of the wrong type.
+        """
+        socket_type: str = node.inputs[index].type
+        const_types = AbstractSocket.allowed_const_types(socket_type)
+            
+        # If the argument is an AbstractSocket, then the allowed types can be
+        # found using get_allowed_link_types().
+        if isinstance(socket, AbstractSocket):
+            bl_idnames = socket.get_bl_idnames()
+            
+            if node.inputs[index].type in bl_idnames:
+                node_tree.links.new(socket.socket_reference, node.inputs[index])
+            else:
+                raise TypeError("Argument {} of type {} doesn't support object"
+                    " of type {}.".format(index, socket_type, socket.__class__))
+        
+        # If the argument is constant, then look up whether this is allowed in
+        # the global lookup table get_allowed_constant_types().
+        elif const_types is not None and isinstance(socket, const_types):
+            node.inputs[index].default_value = socket
+        
+        elif socket is not None:
+            raise TypeError("Argument {} of type {} doesn't support object"
+                " of type {}.".format(index, socket_type, socket.__class__))
+    
+    @staticmethod
+    def add_linked_node(input_list, node_type: str = ''):
+        """Appends a node and connects its inputs.
+
+        Adds a node to the node tree, checks if the input_list entries are of
+        the right type, and connects the input_list to the node.
+
+        Args:
+            input_list:
+                A list of arguments that will be connected to the new node. It
+                must contain at least one AbstractSocket. If an entry is derived
+                from AbstractSocket, it will be connected to the corresponding 
+                node input. If an entry is a constant value, the node's input
+                will be set to that constant value. If an entry is None, then
+                the node input will be skipped.
+            node_type:
+                The name of the node type to be added. Should be the string in
+                bpy.types.Node.bl_idname, where Node is the type of node
+                that you want to add.
+
+        Returns:
+            A tuple containing the new bpy.types.Node and the layer index of
+            the added node.
+
+        Raises:
+            TypeError:
+                The object in input_list cannot connect to the node's socket,
+                due to being of the wrong type.
+        """
+        node_tree = AbstractSocket.__get_node_tree(input_list)
+
+        # Create a new node:
+        node, layer = AbstractSocket.new_node(input_list, node_type)
+
+        # Connect the arguments to the node's inputs:
+        index: int = 0
+        for socket in input_list:
+            AbstractSocket.connect_argument(node_tree, socket, index, node)
+            
+            index = index + 1
+
+        # The node is now complete and linked, so return:
+        return (node_tree, node, layer)
 

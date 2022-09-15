@@ -13,6 +13,16 @@ class Scalar(AbstractTensor):
         super().__init__(node_tree, socket_reference, layer)
     
     @staticmethod
+    def get_bl_idnames():
+        """Returns a list of Blender socket types that this class represents.
+        
+        Returns:
+            List of strings corresponding to Blender Geometry Nodes socket
+            types.
+        """
+        return ['VALUE', 'INT']
+    
+    @staticmethod
     def math_operation_unary(input, operation: str = 'ADD', use_clamp: bool = False):
         math_node, layer = input.new_node([input], 'ShaderNodeMath')
         math_node.operation = operation

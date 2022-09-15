@@ -6,7 +6,7 @@ from .types import *
 from .math import *
 import math as constants
 
-class GeometryFunction():
+class GeometryNodeTree():
     """Generate geometry node trees. Corresponds to a GeometryNodeTree."""
     
     def __init__(self, name: str):
@@ -218,7 +218,25 @@ class GeometryFunction():
         return Scalar(self.node_tree, frame.outputs[1])
 
 
-class NormalDistribution(GeometryFunction):
+class LERP(GeometryNodeTree):
+    """Linear interpolation of vectors."""
+    
+    def __init__(self, name: str):
+        super().__init__(name)
+        
+        # Inputs:
+        vector1 = self.InputVector('Vector 1')
+        vector2 = self.InputVector('Vector 2')
+        mix = self.InputFloat('Mix')
+        
+        # Code:
+        output = (1.0 - mix) * vector1 + mix * vector2
+        
+        # Outputs:
+        self.OutputVector(output, 'Vector')
+
+
+class NormalDistribution(GeometryNodeTree):
     """The normal distribution function, also known as a bell curve."""
     
     def __init__(self, name: str):
@@ -235,13 +253,15 @@ class NormalDistribution(GeometryFunction):
         
         # Outputs:
         self.OutputFloat(output, 'Normal Distribution')
-     
 
-class ExampleFunction(GeometryFunction):
+
+class ExampleFunction(GeometryNodeTree):
     """Add tubercules to bones"""
     
     def __init__(self, name: str):
         super().__init__(name)
+        
+        normal_distribution = NormalDistribution('common.normal_distribution')
         
         # Add new nodes to the tree:
         input = self.InputGeometry()
@@ -257,6 +277,12 @@ class ExampleFunction(GeometryFunction):
         
         variable6 = vector2.y + variable3
         variable7 = vector2.x + 2.0
+        
+        #normal_distribution(self.node_tree)
+        
+        variable9 = map_range(1.0, 2.0, variable2, 0.0, 1.0)
+        
+        vector3 = map_range_vector(vector2, vector2, vector1, vector2, vector2)
         
         variable8 = clamp(min(multiply_add(variable4, variable3, variable5), variable2))
         
