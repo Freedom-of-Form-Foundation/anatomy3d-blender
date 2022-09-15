@@ -2,8 +2,10 @@
 
 import bpy
 
+from .types import AbstractSocket
 from .types import Scalar
 from .types import Boolean
+from .types import Vector3
 import builtins
 
 # ================================
@@ -26,10 +28,16 @@ def wrap(value, min, max):
     return Scalar.math_operation_ternary(value, min, max, operation = 'WRAP')
 
 def clamp(scalar):
+    if not isinstance(scalar, Scalar):
+        return TypeError("Expected a Scalar, but received a {}.".format(scalar.__class__))
+    
     node = scalar.socket_reference.node
     
-    if hasattr(node, 'is_clamped'):
+    if hasattr(node, 'use_clamp'):
         node.use_clamp = True
+        return scalar
+    elif hasattr(node, 'clamp'):
+        node.clamp = True
         return scalar
     else:
         math_node, layer = scalar.new_node([scalar], 'ShaderNodeMath')
@@ -140,4 +148,43 @@ def is_not_equal(A, B, epsilon, mode: str = 'ELEMENTWISE') -> Boolean:
         return B.math_comparison(A, B, epsilon, operation = 'NOT_EQUAL', mode = mode)
     else:
         return A.math_comparison(A, B, epsilon, operation = 'NOT_EQUAL', mode = mode)
+
+def map_range(
+        value: Scalar | float,
+        from_min: Scalar | float,
+        from_max: Scalar | float,
+        to_min: Scalar | float,
+        to_max: Scalar | float,
+        steps: Scalar | float = 4.0,
+        interpolation_type: str = 'LINEAR') -> Scalar:
+    node_tree, node, layer = AbstractSocket.add_linked_node(
+        [value, from_min, from_max, to_min, to_max, steps],
+        'ShaderNodeMapRange')
+    
+    node.clamp = False
+    node.interpolation_type = interpolation_type
+    node.data_type = 'FLOAT'
+    
+    return Scalar(node_tree, node.outputs[0], layer)
+
+def map_range_vector(
+        value: Vector3,
+        from_min: Vector3,
+        from_max: Vector3,
+        to_min: Vector3,
+        to_max: Vector3,
+        steps: Vector3 | None = None,
+        interpolation_type: str = 'LINEAR') -> Scalar:
+    node_tree, node, layer = AbstractSocket.add_linked_node(
+        [None, None, None, None, None, None,
+            value, from_min, from_max, to_min, to_max, steps],
+        'ShaderNodeMapRange')
+    
+    node.clamp = False
+    node.interpolation_type = interpolation_type
+    node.data_type = 'FLOAT_VECTOR'
+    
+    return Scalar(node_tree, node.outputs[0], layer)
+
+
 

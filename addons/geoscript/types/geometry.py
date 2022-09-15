@@ -13,6 +13,16 @@ class Geometry(AbstractSocket):
     def __init__(self, node_tree: bpy.types.NodeTree = None, socket_reference: bpy.types.NodeSocket = None, layer: int = 0):
         super().__init__(node_tree, socket_reference, layer)
     
+    @staticmethod
+    def get_bl_idnames():
+        """Returns a list of Blender socket types that this class represents.
+        
+        Returns:
+            List of strings corresponding to Blender Geometry Nodes socket
+            types.
+        """
+        return ['GEOMETRY']
+    
     # "Set Position" in Blender:
     def move_vertices(self, position = None, offset = None, selection = None):
         node, layer = self.new_node([self, position, offset, selection], 'GeometryNodeSetPosition')
