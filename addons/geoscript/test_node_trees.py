@@ -67,6 +67,27 @@ class ExampleFunction(GeometryNodeTree):
         input = self.InputGeometry()
         variable = self.InputFloat('Float Input')
         vector1 = self.InputVector('Vector Input')
+        boolean = self.InputBoolean('Boolean Input')
+        
+        # geometry.py tests:
+        geo1 = input.move_vertices(vector1, vector1, boolean)
+        geo2 = geo1.set_id(variable, boolean)
+        position, distance = geo1.get_closest_point(vector1)
+        position, distance = geo1.get_closest_edge(vector1)
+        position, distance = geo1.get_closest_face(vector1)
+        geo3 = geo1.transform(vector1, vector1, vector1)
+        geo4, geo5 = geo3.separate_geometry(boolean)
+        geo6 = geo3.get_mesh_component()
+        geo7 = geo3.get_point_cloud_component()
+        geo8 = geo3.get_curve_component()
+        geo9 = geo8.get_volume_component()
+        geo10 = geo9.get_instances_component()
+        geo11 = geo10.merge_all_by_distance(boolean, variable)
+        geo12 = geo11.merge_connected_by_distance(boolean, variable)
+        geo13 = geo12.to_instances()
+        geo14 = geo13.get_bounding_box_geometry()
+        geo15 = geo14.get_convex_hull()
+        vec1, vec2 = geo15.get_bounding_box_points()
         
         variable2 = variable + 3.0
         variable3 = variable2 + variable
