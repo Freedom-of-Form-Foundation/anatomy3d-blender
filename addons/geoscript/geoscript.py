@@ -44,6 +44,7 @@ class GeometryNodeTree():
     def __shift_output_node(self, layer):
         if layer > self.output_layer:
             self.group_output.location = (200.0 * layer, 0.0)
+            self.output_layer = layer
     
     # Adding group inputs:
     def InputGeometry(self, name: str = 'Geometry'):
