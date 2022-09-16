@@ -5,6 +5,7 @@ import bpy
 from .geoscript import *
 from .geofunction import geometry_function
 from .types import *
+from .raytracing import *
 from .math import *
 import math as constants
 
@@ -89,6 +90,19 @@ class ExampleFunction(GeometryNodeTree):
         geo15 = geo14.get_convex_hull()
         vec1, vec2 = geo15.get_bounding_box_points()
         
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, variable, 'FLOAT')
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, variable, 'INT')
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, boolean, 'BOOLEAN')
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, vector1, 'FLOAT_VECTOR')
+        #rayhit = raycast(vec1, vec2, variable, geo15, None, 'FLOAT_COLOR')
+        
+        is_hit = rayhit.is_hit()
+        hit_position = rayhit.hit_position()
+        hit_normal = rayhit.hit_normal()
+        hit_distance = rayhit.hit_distance()
+        attribute = rayhit.attribute()
+        
+        
         variable2 = variable + 3.0
         variable3 = variable2 + variable
         variable4 = 4.0 + variable2
@@ -113,6 +127,7 @@ class ExampleFunction(GeometryNodeTree):
         abc2 = lerp(vector1, vector2, 1.0)
         
         self.OutputGeometry(geometry2, 'Output Geometry')
+        self.OutputFloat(hit_distance, 'Output Float')
         self.OutputFloat(variable8, 'Float Output Name', attribute_domain = 'POINT', default_value = 0.5)
 
 
