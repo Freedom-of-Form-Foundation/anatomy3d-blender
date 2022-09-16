@@ -10,9 +10,14 @@ import math as constants
 
 
 @geometry_function
-def example_function(x: Scalar, mu: Scalar, sigma: Scalar) -> Scalar:
+def normal_distribution(x: Scalar, mu: Scalar, sigma: Scalar | float) -> Scalar:
     exponent = (x-mu)/sigma
     return 1.0/(sigma * constants.sqrt(2.0*constants.pi)) * exp(-0.5*(exponent*exponent))
+
+
+@geometry_function
+def lerp(vector1: Vector3, vector2: Vector3, mix: Scalar) -> Vector3:
+    return (1.0 - mix) * vector1 + mix * vector2
 
 
 class LERP(GeometryNodeTree):
@@ -58,8 +63,6 @@ class ExampleFunction(GeometryNodeTree):
     def __init__(self, name: str):
         super().__init__(name)
         
-        normal_distribution = NormalDistribution('common.normal_distribution')
-        
         # Add new nodes to the tree:
         input = self.InputGeometry()
         variable = self.InputFloat('Float Input')
@@ -85,7 +88,8 @@ class ExampleFunction(GeometryNodeTree):
         
         geometry2 = input.move_vertices(offset = vector2)
         
-        abc = example_function(variable2, variable3, variable4)
+        abc1 = normal_distribution(variable2, variable3, variable4)
+        abc2 = lerp(vector1, vector2, 1.0)
         
         self.OutputGeometry(geometry2, 'Output Geometry')
         self.OutputFloat(variable8, 'Float Output Name', attribute_domain = 'POINT', default_value = 0.5)
