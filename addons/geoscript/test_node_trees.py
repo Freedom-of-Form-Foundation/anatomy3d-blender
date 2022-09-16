@@ -3,9 +3,17 @@
 import bpy
 
 from .geoscript import *
+from .geofunction import geometry_function
 from .types import *
 from .math import *
 import math as constants
+
+
+@geometry_function
+def example_function(x: Scalar, mu: Scalar, sigma: Scalar) -> Scalar:
+    exponent = (x-mu)/sigma
+    return 1.0/(sigma * constants.sqrt(2.0*constants.pi)) * exp(-0.5*(exponent*exponent))
+
 
 class LERP(GeometryNodeTree):
     """Linear interpolation of vectors."""
@@ -77,5 +85,10 @@ class ExampleFunction(GeometryNodeTree):
         
         geometry2 = input.move_vertices(offset = vector2)
         
+        abc = example_function(variable2, variable3, variable4)
+        
         self.OutputGeometry(geometry2, 'Output Geometry')
         self.OutputFloat(variable8, 'Float Output Name', attribute_domain = 'POINT', default_value = 0.5)
+
+
+
