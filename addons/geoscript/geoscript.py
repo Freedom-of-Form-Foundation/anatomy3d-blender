@@ -55,6 +55,15 @@ class GeometryNodeTree():
         
         return socket
     
+    def InputBoolean(self, name: str = 'Geometry'):
+        input_boolean = self.node_tree.inputs.new('NodeSocketBool', name)
+        
+        socket = Boolean(self.node_tree, self.group_input.outputs[self.input_counter])
+        
+        self.input_counter += 1
+        
+        return socket
+    
     def InputFloat(self, name: str):
         input_float = self.node_tree.inputs.new('NodeSocketFloat', name)
         
