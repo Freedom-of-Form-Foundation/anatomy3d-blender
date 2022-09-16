@@ -7,7 +7,11 @@ from .abstract_socket import AbstractSocket
 class Boolean(AbstractSocket):
     """A mathematics operation in a Geometry Node tree. Maps to a "Math" node."""
     
-    def __init__(self, node_tree: bpy.types.NodeTree = None, socket_reference: bpy.types.NodeSocket = None, layer: int = 0):
+    def __init__(
+            self,
+            node_tree: bpy.types.NodeTree = None,
+            socket_reference: bpy.types.NodeSocket = None,
+            layer: int = 0):
         super().__init__(node_tree, socket_reference, layer)
     
     @staticmethod

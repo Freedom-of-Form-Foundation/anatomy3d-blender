@@ -9,7 +9,11 @@ from .scalar import Scalar
 class Vector3(AbstractTensor):
     """A 3D vector object in Geoscript."""
     
-    def __init__(self, node_tree: bpy.types.NodeTree = None, socket_reference: bpy.types.NodeSocket = None, layer: int = 0):
+    def __init__(
+            self,
+            node_tree: bpy.types.NodeTree = None,
+            socket_reference: bpy.types.NodeSocket = None,
+            layer: int = 0):
         super().__init__(node_tree, socket_reference, layer)
     
     @staticmethod

@@ -2,7 +2,7 @@
 
 import bpy
 
-from . import geoscript
+from . import test_node_trees
 
 bl_info = {
     "name": "GeoScript",
@@ -25,8 +25,8 @@ class GeoscriptTestingOperator(bpy.types.Operator):
     bl_label = "Run GeoScript test functions"
 
     def execute(self, context):
-        test_geometry_modifier = geoscript.ExampleFunction('test_geometry_modifier')
-        test_normal_distribution = geoscript.NormalDistribution('common.normal_distribution')
+        test_geometry_modifier = test_node_trees.ExampleFunction('test_geometry_modifier')
+        test_normal_distribution = test_node_trees.NormalDistribution('common.normal_distribution')
         return {'FINISHED'}
 
 

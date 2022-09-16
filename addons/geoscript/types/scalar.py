@@ -9,7 +9,11 @@ from .boolean import Boolean
 class Scalar(AbstractTensor):
     """A scalar type within a Geoscript, which acts like float."""
     
-    def __init__(self, node_tree: bpy.types.NodeTree = None, socket_reference: bpy.types.NodeSocket = None, layer: int = 0):
+    def __init__(
+            self,
+            node_tree: bpy.types.NodeTree = None,
+            socket_reference: bpy.types.NodeSocket = None,
+            layer: int = 0):
         super().__init__(node_tree, socket_reference, layer)
     
     @staticmethod

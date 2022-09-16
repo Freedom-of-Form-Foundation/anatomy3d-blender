@@ -184,7 +184,7 @@ def map_range_vector(
     node.interpolation_type = interpolation_type
     node.data_type = 'FLOAT_VECTOR'
     
-    return Scalar(node_tree, node.outputs[0], layer)
+    return Vector3(node_tree, node.outputs[0], layer)
 
 
 
