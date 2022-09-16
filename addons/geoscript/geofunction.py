@@ -30,7 +30,29 @@ class GeometryNodeFunction(GeometryNodeTree):
         
         # Return a handle or tuple of handles of the node's outputs:
         #for output in node.outputs:
-        return Scalar(node_tree, node.outputs[0], layer)
+        output_list = []
+        for output in node.outputs:
+            if output.type == 'VALUE':
+                 output_list.append(Scalar(node_tree, output, layer))
+            elif output.type == 'INT':
+                 output_list.append(Scalar(node_tree, output, layer))
+            elif output.type == 'BOOLEAN':
+                 output_list.append(Boolean(node_tree, output, layer))
+            elif output.type == 'VECTOR':
+                 output_list.append(Vector3(node_tree, output, layer))
+            elif output.type == 'GEOMETRY':
+                 output_list.append(Geometry(node_tree, output, layer))
+            else:
+                raise ValueError("Unknown output type detected while adding"
+                    " node group. This is likely a bug, please report to"
+                    " the developers.")
+        
+        if len(output_list) == 0:
+            return None
+        elif len(output_list) == 1:
+            return output_list[0]
+        else:
+            return output_list
 
 
 def geometry_function(f):
@@ -47,17 +69,14 @@ def geometry_function(f):
         #TODO: Detect if the node tree already is registered.
         
         # Detect the required node inputs from the function's arguments list:
-        print(f.__annotations__)
         for name in f.__annotations__:
             annotation = f.__annotations__[name]
-            
-            print(name, annotation)
             
             if name == 'return':
                 continue
             
             # Add the node input:
-            if annotation == Scalar:
+            if annotation == Scalar or annotation == Scalar | float:
                 inputs.append(script.InputFloat(name))
             elif annotation == Vector3:
                 inputs.append(script.InputVector(name))
@@ -89,3 +108,4 @@ def geometry_function(f):
         return script(*args, **kwargs)
     
     return _geometry_function
+

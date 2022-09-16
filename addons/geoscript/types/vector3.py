@@ -37,7 +37,7 @@ class Vector3(AbstractTensor):
     
     @staticmethod
     def math_operation_binary(left, right, operation: str = 'ADD', use_clamp: bool = False):
-        if isinstance(right, left.__class__):
+        if isinstance(right, left.__class__ | Scalar):
             tree, math_node, layer = left.new_node([left, right], 'ShaderNodeVectorMath')
             math_node.operation = operation
             
@@ -72,7 +72,7 @@ class Vector3(AbstractTensor):
         return NotImplemented
     
     def __rmul__(self, other):
-        if isinstance(other, (float, Scalar)):
+        if isinstance(other, float | Scalar):
             return self.math_operation_binary(self, other, operation = 'SCALE');
         else:
             return NotImplemented
