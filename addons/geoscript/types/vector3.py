@@ -28,45 +28,41 @@ class Vector3(AbstractTensor):
     
     @staticmethod
     def math_operation_unary(input, operation: str = 'ADD', use_clamp: bool = False):
-        #math_node = input.node_tree.nodes.new('ShaderNodeVectorMath')
-        math_node, layer = input.new_node([input], 'ShaderNodeVectorMath')
+        tree, math_node, layer = input.new_node([input], 'ShaderNodeVectorMath')
         math_node.operation = operation
         
-        input.node_tree.links.new(left.socket_reference, math_node.inputs[0])
+        tree.links.new(left.socket_reference, math_node.inputs[0])
         
-        return Vector3(input.node_tree, math_node.outputs[0], layer)
+        return Vector3(tree, math_node.outputs[0], layer)
     
     @staticmethod
     def math_operation_binary(left, right, operation: str = 'ADD', use_clamp: bool = False):
         if isinstance(right, left.__class__):
-            #math_node = left.node_tree.nodes.new('ShaderNodeVectorMath')
-            math_node, layer = left.new_node([left, right], 'ShaderNodeVectorMath')
+            tree, math_node, layer = left.new_node([left, right], 'ShaderNodeVectorMath')
             math_node.operation = operation
             
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
-            left.node_tree.links.new(right.socket_reference, math_node.inputs[1])
+            tree.links.new(left.socket_reference, math_node.inputs[0])
+            tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Vector3(left.node_tree, math_node.outputs[0], layer)
+            return Vector3(tree, math_node.outputs[0], layer)
         
         elif isinstance(right, float):
-            #math_node = left.node_tree.nodes.new('ShaderNodeVectorMath')
-            math_node, layer = left.new_node([left], 'ShaderNodeVectorMath')
+            tree, math_node, layer = left.new_node([left], 'ShaderNodeVectorMath')
             math_node.operation = operation
             math_node.inputs[3].default_value = right
             
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
+            tree.links.new(left.socket_reference, math_node.inputs[0])
             
-            return Vector3(left.node_tree, math_node.outputs[0], layer)
+            return Vector3(tree, math_node.outputs[0], layer)
         
         elif isinstance(left, float):
-            #math_node = right.node_tree.nodes.new('ShaderNodeVectorMath')
-            math_node, layer = right.new_node([right], 'ShaderNodeVectorMath')
+            tree, math_node, layer = right.new_node([right], 'ShaderNodeVectorMath')
             math_node.operation = operation
             math_node.inputs[3].default_value = left
             
-            right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
+            tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Vector3(right.node_tree, math_node.outputs[0], layer)
+            return Vector3(tree, math_node.outputs[0], layer)
         
         else:
             return NotImplemented
@@ -84,11 +80,11 @@ class Vector3(AbstractTensor):
     # Component getters:
     def check_or_create_separation_node(self):
         if not hasattr(self, 'separate_xyz_node'):
-            separate_xyz_node, layer = self.new_node([self], 'ShaderNodeSeparateXYZ')
-            self.separate_xyz_node = separate_xyz_node
+            tree, node, layer = self.new_node([self], 'ShaderNodeSeparateXYZ')
+            self.separate_xyz_node = node
             self.separate_xyz_layer = layer
             
-            self.node_tree.links.new(self.socket_reference, separate_xyz_node.inputs[0])
+            tree.links.new(self.socket_reference, node.inputs[0])
     
     @property
     def x(self):

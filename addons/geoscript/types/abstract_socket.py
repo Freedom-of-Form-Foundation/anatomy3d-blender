@@ -155,7 +155,7 @@ class AbstractSocket():
         new_node = node_tree.nodes.new(node_type)
         new_node.location = (200.0 * new_layer, 0.0)
         
-        return (new_node, new_layer)
+        return (node_tree, new_node, new_layer)
     
     # DEPRECATED:
     @staticmethod
@@ -253,10 +253,8 @@ class AbstractSocket():
                 The object in input_list cannot connect to the node's socket,
                 due to being of the wrong type.
         """
-        node_tree = AbstractSocket.__get_node_tree(input_list)
-
         # Create a new node:
-        node, layer = AbstractSocket.new_node(input_list, node_type)
+        node_tree, node, layer = AbstractSocket.new_node(input_list, node_type)
 
         # Connect the arguments to the node's inputs:
         index: int = 0

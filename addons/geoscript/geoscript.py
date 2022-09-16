@@ -10,6 +10,8 @@ class GeometryNodeTree():
     """Generate geometry node trees. Corresponds to a GeometryNodeTree."""
     
     def __init__(self, name: str):
+        self.__registered_name = name
+        
         # Get the node tree. If it doesn't yet exist, create a new tree:
         self.node_tree = bpy.data.node_groups.get(name)
         if not self.node_tree:
@@ -35,6 +37,9 @@ class GeometryNodeTree():
         
         self.group_input = self.node_tree.nodes.new('NodeGroupInput')
         self.group_output = self.node_tree.nodes.new('NodeGroupOutput')
+    
+    def get_registered_name(self):
+        return self.__registered_name
     
     def __shift_output_node(self, layer):
         if layer > self.output_layer:
@@ -100,9 +105,7 @@ class GeometryNodeTree():
             tooltip: str = '',
             attribute_domain: str = 'POINT',
             default_attribute_name: str = '',
-            default_value: bool = False,
-            min_value: float = float('-inf'),
-            max_value: float = float('inf')):
+            default_value: bool = False):
         
         output = self.node_tree.outputs.new('NodeSocketFloat', name)
         output.description = tooltip

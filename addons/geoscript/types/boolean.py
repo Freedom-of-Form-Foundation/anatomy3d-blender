@@ -27,44 +27,44 @@ class Boolean(AbstractSocket):
     @staticmethod
     def math_operation_unary(input, operation: str = 'ADD'):
         #math_node = input.node_tree.nodes.new('ShaderNodeMath')
-        math_node, layer = input.new_node([input], 'FunctionNodeBooleanMath')
+        tree, math_node, layer = input.new_node([input], 'FunctionNodeBooleanMath')
         math_node.operation = operation
         
-        input.node_tree.links.new(left.socket_reference, math_node.inputs[0])
+        tree.links.new(left.socket_reference, math_node.inputs[0])
         
-        return Boolean(input.node_tree, math_node.outputs[0], layer)
+        return Boolean(tree, math_node.outputs[0], layer)
     
     @staticmethod
     def math_operation_binary(left, right, operation: str = 'ADD'):
         if isinstance(right, left.__class__):
             #math_node = left.node_tree.nodes.new('ShaderNodeMath')
-            math_node, layer = left.new_node([left, right], 'FunctionNodeBooleanMath')
+            tree, math_node, layer = AbstractSocket.new_node([left, right], 'FunctionNodeBooleanMath')
             math_node.operation = operation
             
             left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
             left.node_tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Boolean(left.node_tree, math_node.outputs[0], layer)
+            return Boolean(tree, math_node.outputs[0], layer)
         
         elif isinstance(right, bool):
             #math_node = left.node_tree.nodes.new('ShaderNodeMath')
-            math_node, layer = left.new_node([left], 'FunctionNodeBooleanMath')
+            tree, math_node, layer = AbstractSocket.new_node([left], 'FunctionNodeBooleanMath')
             math_node.operation = operation
             math_node.inputs[1].default_value = right
             
             left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
             
-            return Boolean(left.node_tree, math_node.outputs[0], layer)
+            return Boolean(tree, math_node.outputs[0], layer)
         
         elif isinstance(left, bool):
             #math_node = right.node_tree.nodes.new('ShaderNodeMath')
-            math_node, layer = right.new_node([right], 'FunctionNodeBooleanMath')
+            tree, math_node, layer = AbstractSocket.new_node([right], 'FunctionNodeBooleanMath')
             math_node.operation = operation
             math_node.inputs[0].default_value = left
             
             right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Boolean(right.node_tree, math_node.outputs[0], layer)
+            return Boolean(tree, math_node.outputs[0], layer)
         
         else:
             return NotImplemented

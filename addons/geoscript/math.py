@@ -40,14 +40,14 @@ def clamp(scalar):
         node.clamp = True
         return scalar
     else:
-        math_node, layer = scalar.new_node([scalar], 'ShaderNodeMath')
+        node_tree, math_node, layer = scalar.new_node([scalar], 'ShaderNodeMath')
         math_node.operation = 'ADD'
         math_node.use_clamp = True
         math_node.inputs[1].default_value = 0.0
         
-        scalar.node_tree.links.new(scalar.socket_reference, math_node.inputs[0])
+        node_tree.links.new(scalar.socket_reference, math_node.inputs[0])
         
-        return Scalar(scalar.node_tree, math_node.outputs[0], layer)
+        return Scalar(node_tree, math_node.outputs[0], layer)
 
 
 def log(value, base):

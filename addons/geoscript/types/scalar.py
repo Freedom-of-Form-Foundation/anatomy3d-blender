@@ -28,45 +28,45 @@ class Scalar(AbstractTensor):
     
     @staticmethod
     def math_operation_unary(input, operation: str = 'ADD', use_clamp: bool = False):
-        math_node, layer = input.new_node([input], 'ShaderNodeMath')
+        tree, math_node, layer = input.new_node([input], 'ShaderNodeMath')
         math_node.operation = operation
         math_node.use_clamp = use_clamp
         
-        input.node_tree.links.new(input.socket_reference, math_node.inputs[0])
+        tree.links.new(input.socket_reference, math_node.inputs[0])
         
-        return Scalar(input.node_tree, math_node.outputs[0], layer)
+        return Scalar(tree, math_node.outputs[0], layer)
     
     @staticmethod
     def math_operation_binary(left, right, operation: str = 'ADD', use_clamp: bool = False):
         if isinstance(right, left.__class__):
-            math_node, layer = left.new_node([left, right], 'ShaderNodeMath')
+            tree, math_node, layer = left.new_node([left, right], 'ShaderNodeMath')
             math_node.operation = operation
             math_node.use_clamp = use_clamp
             
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
-            left.node_tree.links.new(right.socket_reference, math_node.inputs[1])
+            tree.links.new(left.socket_reference, math_node.inputs[0])
+            tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Scalar(left.node_tree, math_node.outputs[0], layer)
+            return Scalar(tree, math_node.outputs[0], layer)
         
         elif isinstance(right, float):
-            math_node, layer = left.new_node([left], 'ShaderNodeMath')
+            tree, math_node, layer = left.new_node([left], 'ShaderNodeMath')
             math_node.operation = operation
             math_node.use_clamp = use_clamp
             math_node.inputs[1].default_value = right
             
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
+            tree.links.new(left.socket_reference, math_node.inputs[0])
             
-            return Scalar(left.node_tree, math_node.outputs[0], layer)
+            return Scalar(tree, math_node.outputs[0], layer)
         
         elif isinstance(left, float):
-            math_node, layer = right.new_node([right], 'ShaderNodeMath')
+            tree, math_node, layer = right.new_node([right], 'ShaderNodeMath')
             math_node.operation = operation
             math_node.use_clamp = use_clamp
             math_node.inputs[0].default_value = left
             
-            right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
+            tree.links.new(right.socket_reference, math_node.inputs[1])
             
-            return Scalar(right.node_tree, math_node.outputs[0], layer)
+            return Scalar(tree, math_node.outputs[0], layer)
         
         else:
             return NotImplemented
@@ -86,7 +86,7 @@ class Scalar(AbstractTensor):
         if len(socket_list) == 0:
             raise ValueError("Ternary operator applied on non-Scalar types {}, {} and {}.".format(left.__class__, middle.__class__, right.__class__))
         
-        math_node, layer = left.new_node(socket_list, 'ShaderNodeMath')
+        tree, math_node, layer = left.new_node(socket_list, 'ShaderNodeMath')
         math_node.operation = operation
         math_node.use_clamp = use_clamp
         
@@ -122,7 +122,7 @@ class Scalar(AbstractTensor):
         if len(socket_list) == 0:
             raise ValueError("Ternary operator applied on non-Scalar types {}, {} and {}.".format(left.__class__, right.__class__, epsilon.__class__))
         
-        math_node, layer = left.new_node(socket_list, 'FunctionNodeCompare')
+        tree, math_node, layer = left.new_node(socket_list, 'FunctionNodeCompare')
         math_node.operation = operation
         math_node.data_type = 'FLOAT'
         if hasattr(math_node, 'mode'):
