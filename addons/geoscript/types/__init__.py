@@ -7,4 +7,11 @@ from .scalar import Scalar
 from .vector3 import Vector3
 from .geometry import Geometry
 
-__all__ = ["AbstractSocket", "AbstractTensor", "Boolean", "Scalar", "Vector3", "Geometry"]
+__all__ = [
+    "AbstractSocket",
+    "AbstractTensor",
+    "Boolean",
+    "Scalar",
+    "Vector3",
+    "Geometry",
+]

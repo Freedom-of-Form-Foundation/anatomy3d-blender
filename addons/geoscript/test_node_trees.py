@@ -6,14 +6,14 @@ from .geoscript import *
 from .geofunction import geometry_function
 from .types import *
 from .raytracing import *
-from .math import *
-import math as constants
+import math as m
+from . import math as g
 
 
 @geometry_function
 def normal_distribution(x: Scalar, mu: Scalar, sigma: Scalar | float) -> Scalar:
-    exponent = (x-mu)/sigma
-    return 1.0/(sigma * constants.sqrt(2.0*constants.pi)) * exp(-0.5*(exponent*exponent))
+    ex = (x - mu) / sigma
+    return 1.0 / (sigma * m.sqrt(2.0 * m.pi)) * g.exp(-0.5 * (ex * ex))
 
 
 @geometry_function
@@ -23,53 +23,53 @@ def lerp(vector1: Vector3, vector2: Vector3, mix: Scalar) -> Vector3:
 
 class LERP(GeometryNodeTree):
     """Linear interpolation of vectors."""
-    
+
     def __init__(self, name: str):
         super().__init__(name)
-        
+
         # Inputs:
-        vector1 = self.InputVector('Vector 1')
-        vector2 = self.InputVector('Vector 2')
-        mix = self.InputFloat('Mix')
-        
+        vector1 = self.InputVector("Vector 1")
+        vector2 = self.InputVector("Vector 2")
+        mix = self.InputFloat("Mix")
+
         # Code:
         output = (1.0 - mix) * vector1 + mix * vector2
-        
+
         # Outputs:
-        self.OutputVector(output, 'Vector')
+        self.OutputVector(output, "Vector")
 
 
 class NormalDistribution(GeometryNodeTree):
     """The normal distribution function, also known as a bell curve."""
-    
+
     def __init__(self, name: str):
         super().__init__(name)
-        
+
         # Inputs:
-        x = self.InputFloat('x')
-        mu = self.InputFloat('mu')
-        sigma = self.InputFloat('sigma')
-        
+        x = self.InputFloat("x")
+        mu = self.InputFloat("mu")
+        sigma = self.InputFloat("sigma")
+
         # Code:
-        exponent = (x-mu)/sigma
-        output = 1.0/(sigma * constants.sqrt(2.0*constants.pi)) * exp(-0.5*(exponent*exponent))
-        
+        ex = (x - mu) / sigma
+        output = 1.0 / (sigma * m.sqrt(2.0 * m.pi)) * g.exp(-0.5 * (ex * ex))
+
         # Outputs:
-        self.OutputFloat(output, 'Normal Distribution')
+        self.OutputFloat(output, "Normal Distribution")
 
 
 class ExampleFunction(GeometryNodeTree):
     """Add tubercules to bones"""
-    
+
     def __init__(self, name: str):
         super().__init__(name)
-        
+
         # Add new nodes to the tree:
         input = self.InputGeometry()
-        variable = self.InputFloat('Float Input')
-        vector1 = self.InputVector('Vector Input')
-        boolean = self.InputBoolean('Boolean Input')
-        
+        variable = self.InputFloat("Float Input")
+        vector1 = self.InputVector("Vector Input")
+        boolean = self.InputBoolean("Boolean Input")
+
         # geometry.py tests:
         geo1 = input.move_vertices(vector1, vector1, boolean)
         geo2 = geo1.set_id(variable, boolean)
@@ -89,46 +89,46 @@ class ExampleFunction(GeometryNodeTree):
         geo14 = geo13.get_bounding_box_geometry()
         geo15 = geo14.get_convex_hull()
         vec1, vec2 = geo15.get_bounding_box_points()
-        
-        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, variable, 'FLOAT')
-        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, variable, 'INT')
-        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, boolean, 'BOOLEAN')
-        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, vector1, 'FLOAT_VECTOR')
-        #rayhit = raycast(vec1, vec2, variable, geo15, None, 'FLOAT_COLOR')
-        
+
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, variable, "FLOAT")
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, variable, "INT")
+        rayhit = raycast_with_attribute(vec1, vec2, variable, geo15, boolean, "BOOLEAN")
+        rayhit = raycast_with_attribute(
+            vec1, vec2, variable, geo15, vector1, "FLOAT_VECTOR"
+        )
+        # rayhit = raycast(vec1, vec2, variable, geo15, None, 'FLOAT_COLOR')
+
         is_hit = rayhit.is_hit()
         hit_position = rayhit.hit_position()
         hit_normal = rayhit.hit_normal()
         hit_distance = rayhit.hit_distance()
         attribute = rayhit.attribute()
-        
-        
+
         variable2 = variable + 3.0
         variable3 = variable2 + variable
         variable4 = 4.0 + variable2
         variable5 = variable + (3.0 + 2.0) * variable
 
         vector2 = 2.0 * vector1
-        
+
         variable6 = vector2.y + variable3
         variable7 = vector2.x + 2.0
-        
-        #normal_distribution(self.node_tree)
-        
+
+        # normal_distribution(self.node_tree)
+
         variable9 = map_range(1.0, 2.0, variable2, 0.0, 1.0)
-        
+
         vector3 = map_range_vector(vector2, vector2, vector1, vector2, vector2)
-        
+
         variable8 = clamp(min(multiply_add(variable4, variable3, variable5), variable2))
-        
-        geometry2 = input.move_vertices(offset = vector2)
-        
+
+        geometry2 = input.move_vertices(offset=vector2)
+
         abc1 = normal_distribution(variable2, variable3, variable4)
         abc2 = lerp(vector1, vector2, 1.0)
-        
-        self.OutputGeometry(geometry2, 'Output Geometry')
-        self.OutputFloat(hit_distance, 'Output Float')
-        self.OutputFloat(variable8, 'Float Output Name', attribute_domain = 'POINT', default_value = 0.5)
 
-
-
+        self.OutputGeometry(geometry2, "Output Geometry")
+        self.OutputFloat(hit_distance, "Output Float")
+        self.OutputFloat(
+            variable8, "Float Output Name", attribute_domain="POINT", default_value=0.5
+        )

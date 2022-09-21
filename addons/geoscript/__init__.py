@@ -21,21 +21,27 @@ bl_info = {
 # Define an operator (button) that allows the user to run the script:
 class GeoscriptTestingOperator(bpy.types.Operator):
     """Run GeoScript test functions"""
+
     bl_idname = "geoscript.run_tests"
     bl_label = "Run GeoScript test functions"
 
     def execute(self, context):
-        test_geometry_modifier = test_node_trees.ExampleFunction('test_geometry_modifier')
-        test_normal_distribution = test_node_trees.NormalDistribution('common.normal_distribution')
-        return {'FINISHED'}
+        test_geometry_modifier = test_node_trees.ExampleFunction(
+            "test_geometry_modifier"
+        )
+        test_normal_distribution = test_node_trees.NormalDistribution(
+            "common.normal_distribution"
+        )
+        return {"FINISHED"}
 
 
 class GeoscriptTestingPanel(bpy.types.Panel):
     """Creates a Panel in the text editor window"""
+
     bl_label = "Hello World Panel"
-    bl_space_type = 'TEXT_EDITOR'
-    bl_category = 'GeoScript'
-    bl_region_type = 'UI'
+    bl_space_type = "TEXT_EDITOR"
+    bl_category = "GeoScript"
+    bl_region_type = "UI"
 
     def draw(self, context):
         layout = self.layout
@@ -43,7 +49,7 @@ class GeoscriptTestingPanel(bpy.types.Panel):
         obj = context.object
 
         row = layout.row()
-        row.label(text="Hello world!", icon='WORLD_DATA')
+        row.label(text="Hello world!", icon="WORLD_DATA")
 
         row = layout.row()
         row.operator("geoscript.run_tests")
@@ -54,10 +60,12 @@ def register():
     bpy.utils.register_class(GeoscriptTestingPanel)
     print("Registered GeoScript Addon")
 
+
 def unregister():
     bpy.utils.unregister_class(GeoscriptTestingOperator)
     bpy.utils.unregister_class(GeoscriptTestingPanel)
     print("Unregistered GeoScript Addon")
+
 
 if __name__ == "__main__":
     register()
