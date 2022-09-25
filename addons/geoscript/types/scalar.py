@@ -2,6 +2,9 @@
 
 import bpy
 
+from typing import Optional, Union
+from ..exceptions import BlenderTypeError
+from .abstract_socket import AbstractSocket
 from .abstract_tensor import AbstractTensor
 from .boolean import Boolean
 
@@ -20,51 +23,42 @@ class Scalar(AbstractTensor):
         return ["VALUE", "INT"]
 
     @staticmethod
-    def math_operation_unary(scalar, operation: str = "ADD", use_clamp: bool = False):
-        tree, math_node, layer = scalar.new_node([scalar], "ShaderNodeMath")
-        math_node.operation = operation
-        math_node.use_clamp = use_clamp
+    def math_operation_unary(
+        scalar, operation: str = "ADD", use_clamp: bool = False
+    ) -> "Scalar":
+        node = scalar.add_linked_node([scalar], "ShaderNodeMath")
 
-        tree.links.new(scalar.socket_reference, math_node.inputs[0])
+        bl_node = node.get_bl_node()
+        if not isinstance(bl_node, bpy.types.ShaderNodeMath):
+            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
+        bl_node.operation = operation
+        bl_node.use_clamp = use_clamp
 
-        return Scalar(tree, math_node.outputs[0], layer)
+        return Scalar(node, 0)
 
     @staticmethod
     def math_operation_binary(
-        left, right, operation: str = "ADD", use_clamp: bool = False
-    ):
-        if isinstance(right, left.__class__):
-            tree, math_node, layer = left.new_node([left, right], "ShaderNodeMath")
-            math_node.operation = operation
-            math_node.use_clamp = use_clamp
-
-            tree.links.new(left.socket_reference, math_node.inputs[0])
-            tree.links.new(right.socket_reference, math_node.inputs[1])
-
-            return Scalar(tree, math_node.outputs[0], layer)
-
-        elif isinstance(right, float):
-            tree, math_node, layer = left.new_node([left], "ShaderNodeMath")
-            math_node.operation = operation
-            math_node.use_clamp = use_clamp
-            math_node.inputs[1].default_value = right
-
-            tree.links.new(left.socket_reference, math_node.inputs[0])
-
-            return Scalar(tree, math_node.outputs[0], layer)
-
-        elif isinstance(left, float):
-            tree, math_node, layer = right.new_node([right], "ShaderNodeMath")
-            math_node.operation = operation
-            math_node.use_clamp = use_clamp
-            math_node.inputs[0].default_value = left
-
-            tree.links.new(right.socket_reference, math_node.inputs[1])
-
-            return Scalar(tree, math_node.outputs[0], layer)
-
-        else:
+        left: Union["Scalar", float],
+        right: Union["Scalar", float],
+        operation: str = "ADD",
+        use_clamp: bool = False,
+    ) -> "Scalar":
+        if not isinstance(right, Scalar | float):
             return NotImplemented
+        if not isinstance(left, Scalar | float):
+            return NotImplemented
+        if isinstance(left, float) and isinstance(right, float):
+            return NotImplemented
+
+        node = AbstractSocket.add_linked_node([left, right], "ShaderNodeMath")
+
+        bl_node = node.get_bl_node()
+        if not isinstance(bl_node, bpy.types.ShaderNodeMath):
+            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
+        bl_node.operation = operation
+        bl_node.use_clamp = use_clamp
+
+        return Scalar(node, 0)
 
     @staticmethod
     def math_operation_ternary(
@@ -73,89 +67,44 @@ class Scalar(AbstractTensor):
         right,
         operation: str = "MULTIPLY_ADD",
         use_clamp: bool = False,
-    ):
-        socket_list = []
-        if isinstance(left, Scalar):
-            socket_list.append(left)
+    ) -> "Scalar":
+        node = AbstractSocket.add_linked_node([left, middle, right], "ShaderNodeMath")
 
-        if isinstance(middle, Scalar):
-            socket_list.append(middle)
+        bl_node = node.get_bl_node()
+        if not isinstance(bl_node, bpy.types.ShaderNodeMath):
+            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
+        bl_node.operation = operation
+        bl_node.use_clamp = use_clamp
 
-        if isinstance(right, Scalar):
-            socket_list.append(right)
-
-        if len(socket_list) == 0:
-            raise ValueError(
-                "Ternary operator applied on non-Scalar"
-                " types {}, {} and {}.".format(
-                    left.__class__, middle.__class__, right.__class__
-                )
-            )
-
-        tree, math_node, layer = left.new_node(socket_list, "ShaderNodeMath")
-        math_node.operation = operation
-        math_node.use_clamp = use_clamp
-
-        if isinstance(left, Scalar):
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
-        elif isinstance(left, float):
-            math_node.inputs[0].default_value = left
-
-        if isinstance(middle, Scalar):
-            middle.node_tree.links.new(middle.socket_reference, math_node.inputs[1])
-        elif isinstance(middle, float):
-            math_node.inputs[1].default_value = middle
-
-        if isinstance(right, Scalar):
-            right.node_tree.links.new(right.socket_reference, math_node.inputs[2])
-        elif isinstance(right, float):
-            math_node.inputs[2].default_value = right
-
-        return Scalar(socket_list[0].node_tree, math_node.outputs[0], layer)
+        return Scalar(node, 0)
 
     @staticmethod
     def math_comparison(
-        left, right, epsilon, operation: str = "LESS_THAN", mode="ELEMENT"
-    ):
-        socket_list = []
-        if isinstance(left, Scalar):
-            socket_list.append(left)
+        left: Union["Scalar", float],
+        right: Union["Scalar", float],
+        epsilon: Optional[Union["Scalar", float]],
+        operation: str = "LESS_THAN",
+        mode: str = "ELEMENT",
+    ) -> "Boolean":
+        if not isinstance(right, Scalar | float):
+            return NotImplemented
+        if not isinstance(left, Scalar | float):
+            return NotImplemented
+        if isinstance(left, float) and isinstance(right, float):
+            return NotImplemented
 
-        if isinstance(right, Scalar):
-            socket_list.append(right)
+        arguments = [left, right, epsilon]
+        node = AbstractSocket.add_linked_node(arguments, "FunctionNodeCompare")
+        bl_node = node.get_bl_node()
+        if not isinstance(bl_node, bpy.types.FunctionNodeCompare):
+            raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeCompare")
 
-        if isinstance(epsilon, Scalar):
-            socket_list.append(epsilon)
+        bl_node.operation = operation
+        bl_node.data_type = "FLOAT"
+        if hasattr(bl_node, "mode"):
+            bl_node.mode = mode
 
-        if len(socket_list) == 0:
-            raise ValueError(
-                "Ternary operator applied on non-Scalar"
-                " types {}, {} and {}.".format(
-                    left.__class__, right.__class__, epsilon.__class__
-                )
-            )
-
-        tree, math_node, layer = left.new_node(socket_list, "FunctionNodeCompare")
-        math_node.operation = operation
-        math_node.data_type = "FLOAT"
-        if hasattr(math_node, "mode"):
-            math_node.mode = mode
-
-        if isinstance(left, Scalar):
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
-        elif isinstance(left, float):
-            math_node.inputs[0].default_value = left
-
-            right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
-        elif isinstance(right, float):
-            math_node.inputs[1].default_value = right
-
-        if isinstance(epsilon, Scalar):
-            epsilon.node_tree.links.new(epsilon.socket_reference, math_node.inputs[2])
-        elif isinstance(epsilon, float):
-            math_node.inputs[2].default_value = epsilon
-
-        return Boolean(socket_list[0].node_tree, math_node.outputs[0], layer)
+        return Boolean(node, 0)
 
     def __lt__(self, other):
         return self.math_comparison(self, other, None, operation="LESS_THAN")

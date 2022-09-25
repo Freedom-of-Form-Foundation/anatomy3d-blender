@@ -2,20 +2,15 @@
 
 import bpy
 
+from typing import Union
+from ..exceptions import BlenderTypeError
+from .abstract_socket import AbstractSocket
 from .abstract_tensor import AbstractTensor
 from .scalar import Scalar
 
 
 class Vector3(AbstractTensor):
     """A 3D vector object in Geoscript."""
-
-    def __init__(
-        self,
-        node_tree: bpy.types.NodeTree = None,
-        socket_reference: bpy.types.NodeSocket = None,
-        layer: int = 0,
-    ):
-        super().__init__(node_tree, socket_reference, layer)
 
     @staticmethod
     def get_bl_idnames() -> list[str]:
@@ -28,49 +23,45 @@ class Vector3(AbstractTensor):
         return ["VECTOR"]
 
     @staticmethod
-    def math_operation_unary(vector, operation: str = "ADD", use_clamp: bool = False):
-        tree, math_node, layer = vector.new_node([vector], "ShaderNodeVectorMath")
-        math_node.operation = operation
+    def math_operation_unary(
+        vector: "Vector3", operation: str = "ADD", use_clamp: bool = False
+    ) -> "Vector3":
+        node = AbstractSocket.add_linked_node([vector], "ShaderNodeVectorMath")
+        bl_node = node.get_bl_node()
 
-        tree.links.new(vector.socket_reference, math_node.inputs[0])
+        if not isinstance(bl_node, bpy.types.ShaderNodeVectorMath):
+            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeVectorMath")
+        bl_node.operation = operation
 
-        return Vector3(tree, math_node.outputs[0], layer)
+        return Vector3(node, 0)
 
     @staticmethod
     def math_operation_binary(
-        left, right, operation: str = "ADD", use_clamp: bool = False
-    ):
-        if isinstance(right, left.__class__ | Scalar):
-            tree, math_node, layer = left.new_node(
-                [left, right], "ShaderNodeVectorMath"
-            )
-            math_node.operation = operation
-
-            tree.links.new(left.socket_reference, math_node.inputs[0])
-            tree.links.new(right.socket_reference, math_node.inputs[1])
-
-            return Vector3(tree, math_node.outputs[0], layer)
-
-        elif isinstance(right, float):
-            tree, math_node, layer = left.new_node([left], "ShaderNodeVectorMath")
-            math_node.operation = operation
-            math_node.inputs[3].default_value = right
-
-            tree.links.new(left.socket_reference, math_node.inputs[0])
-
-            return Vector3(tree, math_node.outputs[0], layer)
-
-        elif isinstance(left, float):
-            tree, math_node, layer = right.new_node([right], "ShaderNodeVectorMath")
-            math_node.operation = operation
-            math_node.inputs[3].default_value = left
-
-            tree.links.new(right.socket_reference, math_node.inputs[1])
-
-            return Vector3(tree, math_node.outputs[0], layer)
-
-        else:
+        left: Union["Vector3", Scalar, float],
+        right: "Vector3",
+        operation: str = "ADD",
+        use_clamp: bool = False,
+    ) -> "Vector3":
+        if not isinstance(right, Vector3):
             return NotImplemented
+        if not isinstance(left, Vector3 | Scalar | float):
+            return NotImplemented
+
+        node = AbstractSocket.new_node([left, right], "ShaderNodeVectorMath")
+        node.connect_argument(1, right)
+
+        bl_node = node.get_bl_node()
+        if not isinstance(bl_node, bpy.types.ShaderNodeVectorMath):
+            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeVectorMath")
+        bl_node.operation = operation
+
+        # Connect the left argument:
+        if isinstance(left, Vector3):
+            node.connect_argument(0, left)
+        elif isinstance(left, Scalar | float):
+            node.connect_argument(3, left)
+
+        return Vector3(node, 0)
 
     # Multiply:
     def __mul__(self, other):
@@ -78,42 +69,28 @@ class Vector3(AbstractTensor):
 
     def __rmul__(self, other):
         if isinstance(other, float | Scalar):
-            return self.math_operation_binary(self, other, operation="SCALE")
+            return self.math_operation_binary(other, self, operation="SCALE")
         else:
             return NotImplemented
 
     # Component getters:
-    def check_or_create_separation_node(self):
+    def check_or_create_separation_node(self) -> None:
         if not hasattr(self, "separate_xyz_node"):
-            tree, node, layer = self.new_node([self], "ShaderNodeSeparateXYZ")
+            node = self.new_node([self], "ShaderNodeSeparateXYZ")
             self.separate_xyz_node = node
-            self.separate_xyz_layer = layer
-
-            tree.links.new(self.socket_reference, node.inputs[0])
+            node.connect_argument(0, self)
 
     @property
-    def x(self):
+    def x(self) -> Scalar:
         self.check_or_create_separation_node()
-        return Scalar(
-            self.node_tree,
-            self.separate_xyz_node.outputs[0],
-            self.separate_xyz_layer,
-        )
+        return Scalar(self.separate_xyz_node, 0)
 
     @property
-    def y(self):
+    def y(self) -> Scalar:
         self.check_or_create_separation_node()
-        return Scalar(
-            self.node_tree,
-            self.separate_xyz_node.outputs[1],
-            self.separate_xyz_layer,
-        )
+        return Scalar(self.separate_xyz_node, 1)
 
     @property
-    def z(self):
+    def z(self) -> Scalar:
         self.check_or_create_separation_node()
-        return Scalar(
-            self.node_tree,
-            self.separate_xyz_node.outputs[2],
-            self.separate_xyz_layer,
-        )
+        return Scalar(self.separate_xyz_node, 2)

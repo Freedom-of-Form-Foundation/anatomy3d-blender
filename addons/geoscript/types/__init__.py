@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from .abstract_socket import AbstractSocket
+from .abstract_socket import AbstractSocket, NodeHandle
 from .abstract_tensor import AbstractTensor
 from .boolean import Boolean
 from .scalar import Scalar
@@ -14,4 +14,5 @@ __all__ = [
     "Scalar",
     "Vector3",
     "Geometry",
+    "NodeHandle",
 ]

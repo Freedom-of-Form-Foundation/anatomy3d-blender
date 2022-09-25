@@ -2,42 +2,35 @@
 
 import bpy
 
-from .types import AbstractSocket
-from .types import Scalar
-from .types import Boolean
-from .types import Vector3
-from .types import Geometry
+from .exceptions import BlenderTypeError
+from .types import AbstractSocket, NodeHandle, Scalar, Boolean, Vector3, Geometry
 
 
-class RayHit:
-    def __init__(self, node_tree, node, layer):
-        self.__node_tree = node_tree
-        self.__node = node
-        self.__layer = layer
+class RayHit(NodeHandle):
+    def is_hit(self) -> Boolean:
+        return Boolean(self, 0)
 
-    def is_hit(self):
-        return Boolean(self.__node_tree, self.__node.outputs[0], self.__layer)
+    def hit_position(self) -> Vector3:
+        return Vector3(self, 1)
 
-    def hit_position(self):
-        return Vector3(self.__node_tree, self.__node.outputs[1], self.__layer)
+    def hit_normal(self) -> Vector3:
+        return Vector3(self, 2)
 
-    def hit_normal(self):
-        return Vector3(self.__node_tree, self.__node.outputs[2], self.__layer)
+    def hit_distance(self) -> Scalar:
+        return Scalar(self, 3)
 
-    def hit_distance(self):
-        return Scalar(self.__node_tree, self.__node.outputs[3], self.__layer)
-
-    def attribute(self):
-        if self.__node.outputs[4].type == "VALUE":
-            return Scalar(self.__node_tree, self.__node.outputs[3], self.__layer)
-        elif self.__node.outputs[4].type == "INT":
-            return Scalar(self.__node_tree, self.__node.outputs[3], self.__layer)
-        elif self.__node.outputs[4].type == "BOOLEAN":
-            return Boolean(self.__node_tree, self.__node.outputs[3], self.__layer)
-        elif self.__node.outputs[4].type == "VECTOR":
-            return Vector3(self.__node_tree, self.__node.outputs[3], self.__layer)
-        elif self.__node.outputs[4].type == "COLOR":
+    def attribute(self) -> Scalar | Boolean | Vector3 | None:
+        if self.get_output(4).type == "VALUE":
+            return Scalar(self, 4)
+        elif self.get_output(4).type == "INT":
+            return Scalar(self, 4)
+        elif self.get_output(4).type == "BOOLEAN":
+            return Boolean(self, 4)
+        elif self.get_output(4).type == "VECTOR":
+            return Vector3(self, 4)
+        elif self.get_output(4).type == "COLOR":
             return None
+        return None
 
 
 def raycast_with_attribute(
@@ -48,7 +41,7 @@ def raycast_with_attribute(
     attribute=None,
     attribute_data_type: str = "FLOAT",
     attribute_mapping: str = "INTERPOLATED",
-):
+) -> RayHit:
     """Raycasts and samples an attribute at the ray intersection.
 
     Casts a rat from source_position onto target_geometry, and get the attribute
@@ -105,14 +98,18 @@ def raycast_with_attribute(
         arguments[4] = attribute
 
     # Create node:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
+    node = AbstractSocket.add_linked_node(
         arguments, "GeometryNodeRaycast"
     )
 
-    node.data_type = attribute_data_type
-    node.mapping = attribute_mapping
+    # Set the Blender node's properties:
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.GeometryNodeRaycast):
+        raise BlenderTypeError(node, "bpy.types.GeometryNodeRaycast")
+    bl_node.data_type = attribute_data_type
+    bl_node.mapping = attribute_mapping
 
-    return RayHit(node_tree, node, layer)
+    return RayHit(node.get_bl_tree(), node.get_bl_node(), node.get_layer())
 
 
 def raycast(
@@ -120,7 +117,7 @@ def raycast(
     ray_direction: Vector3,
     ray_length: Scalar | float,
     target_geometry: Geometry,
-):
+) -> RayHit:
     """Casts a ray from source_position onto target_geometry.
 
     Args:

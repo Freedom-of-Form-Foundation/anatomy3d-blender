@@ -2,19 +2,12 @@
 
 import bpy
 
+from ..exceptions import BlenderTypeError
 from .abstract_socket import AbstractSocket
 
 
 class Boolean(AbstractSocket):
     """A mathematics operation in a Geometry Node tree. Maps to a "Math" node."""
-
-    def __init__(
-        self,
-        node_tree: bpy.types.NodeTree,
-        socket_reference: bpy.types.NodeSocket,
-        layer: int = 0,
-    ):
-        super().__init__(node_tree, socket_reference, layer)
 
     @staticmethod
     def get_bl_idnames():
@@ -28,50 +21,27 @@ class Boolean(AbstractSocket):
 
     @staticmethod
     def math_operation_unary(self, operation: str = "ADD"):
-        tree, math_node, layer = self.new_node([self], "FunctionNodeBooleanMath")
-        math_node.operation = operation
-
-        tree.links.new(self.socket_reference, math_node.inputs[0])
-
-        return Boolean(tree, math_node.outputs[0], layer)
+        node = self.add_linked_node([self], "FunctionNodeBooleanMath")
+        node.get_bl_node().operation = operation
+        return Boolean(node, 0)
 
     @staticmethod
     def math_operation_binary(left, right, operation: str = "ADD"):
-        if isinstance(right, left.__class__):
-            tree, math_node, layer = AbstractSocket.new_node(
-                [left, right], "FunctionNodeBooleanMath"
-            )
-            math_node.operation = operation
-
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
-            left.node_tree.links.new(right.socket_reference, math_node.inputs[1])
-
-            return Boolean(tree, math_node.outputs[0], layer)
-
-        elif isinstance(right, bool):
-            tree, math_node, layer = AbstractSocket.new_node(
-                [left], "FunctionNodeBooleanMath"
-            )
-            math_node.operation = operation
-            math_node.inputs[1].default_value = right
-
-            left.node_tree.links.new(left.socket_reference, math_node.inputs[0])
-
-            return Boolean(tree, math_node.outputs[0], layer)
-
-        elif isinstance(left, bool):
-            tree, math_node, layer = AbstractSocket.new_node(
-                [right], "FunctionNodeBooleanMath"
-            )
-            math_node.operation = operation
-            math_node.inputs[0].default_value = left
-
-            right.node_tree.links.new(right.socket_reference, math_node.inputs[1])
-
-            return Boolean(tree, math_node.outputs[0], layer)
-
-        else:
+        if not isinstance(right, Boolean | bool):
             return NotImplemented
+        if not isinstance(left, Boolean | bool):
+            return NotImplemented
+        if isinstance(left, bool) and isinstance(right, bool):
+            return NotImplemented
+        node = AbstractSocket.add_linked_node([left, right], "FunctionNodeBooleanMath")
+
+        bl_node = node.get_bl_node()
+
+        if not isinstance(bl_node, bpy.types.FunctionNodeBooleanMath):
+            raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeBooleanMath")
+
+        bl_node.operation = operation
+        return Boolean(node, 0)
 
     # And:
     def __and__(self, other):

@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import bpy
-
 from .abstract_socket import AbstractSocket
 
 
@@ -12,16 +10,8 @@ class AbstractTensor(AbstractSocket):
     operations can be performed.
     """
 
-    def __init__(
-        self,
-        node_tree: bpy.types.NodeTree,
-        socket_reference: bpy.types.NodeSocket,
-        layer: int = 0,
-    ):
-        super().__init__(node_tree, socket_reference, layer)
-
     @staticmethod
-    def math_operation_unary(input, operation: str = "ADD", use_clamp: bool = False):
+    def math_operation_unary(self, operation: str = "ADD", use_clamp: bool = False):
         return NotImplemented
 
     @staticmethod

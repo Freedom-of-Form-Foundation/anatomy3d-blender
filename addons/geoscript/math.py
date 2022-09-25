@@ -5,6 +5,7 @@
 import bpy
 
 import builtins
+from .exceptions import BlenderTypeError
 from .types import AbstractSocket
 from .types import Scalar
 from .types import Boolean
@@ -85,20 +86,25 @@ def clamp(scalar: Scalar) -> Scalar:
             "Expected a Scalar, but received a {}.".format(scalar.__class__)
         )
 
-    node = scalar.socket_reference.node
+    bl_node = scalar.socket_reference.node
 
-    if isinstance(node, bpy.types.ShaderNodeMath):
-        node.use_clamp = True
+    if isinstance(bl_node, bpy.types.ShaderNodeMath):
+        bl_node.use_clamp = True
         return scalar
 
-    node_tree, math_node, layer = scalar.new_node([scalar], "ShaderNodeMath")
-    math_node.operation = "ADD"
-    math_node.use_clamp = True
-    math_node.inputs[1].default_value = 0.0
+    node = AbstractSocket.new_node([scalar], "ShaderNodeMath")
 
-    node_tree.links.new(scalar.socket_reference, math_node.inputs[0])
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.ShaderNodeMath):
+        raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
 
-    return Scalar(node_tree, math_node.outputs[0], layer)
+    bl_node.operation = "ADD"
+    bl_node.use_clamp = True
+
+    node.connect_argument(0, scalar)
+    node.connect_argument(1, 0.0)
+
+    return Scalar(node, 0)
 
 
 def log(value: Scalar | float, base: Scalar | float) -> Scalar:
@@ -246,16 +252,20 @@ def map_range(
     steps: Scalar | float = 4.0,
     interpolation_type: str = "LINEAR",
 ) -> Scalar:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
+    node = AbstractSocket.add_linked_node(
         [value, from_min, from_max, to_min, to_max, steps],
         "ShaderNodeMapRange",
     )
 
-    node.clamp = False
-    node.interpolation_type = interpolation_type
-    node.data_type = "FLOAT"
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.ShaderNodeMapRange):
+        raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMapRange")
 
-    return Scalar(node_tree, node.outputs[0], layer)
+    bl_node.clamp = False
+    bl_node.interpolation_type = interpolation_type
+    bl_node.data_type = "FLOAT"
+
+    return Scalar(node, 0)
 
 
 def map_range_vector(
@@ -267,7 +277,7 @@ def map_range_vector(
     steps: Vector3 | None = None,
     interpolation_type: str = "LINEAR",
 ) -> Vector3:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
+    node = AbstractSocket.add_linked_node(
         [
             None,
             None,
@@ -285,8 +295,12 @@ def map_range_vector(
         "ShaderNodeMapRange",
     )
 
-    node.clamp = False
-    node.interpolation_type = interpolation_type
-    node.data_type = "FLOAT_VECTOR"
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.ShaderNodeMapRange):
+        raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMapRange")
 
-    return Vector3(node_tree, node.outputs[0], layer)
+    bl_node.clamp = False
+    bl_node.interpolation_type = interpolation_type
+    bl_node.data_type = "FLOAT_VECTOR"
+
+    return Vector3(node, 0)
