@@ -2,9 +2,7 @@
 
 import bpy
 
-from .types import *
-from .math import *
-import math as constants
+from .types import AbstractSocket, NodeHandle, Geometry, Vector3, Scalar, Boolean
 
 
 class GeometryNodeTree:
@@ -48,47 +46,47 @@ class GeometryNodeTree:
             self.output_layer = layer
 
     # Adding group inputs:
-    def InputGeometry(self, name: str = "Geometry"):
-        input_geometry = self.node_tree.inputs.new("NodeSocketGeometry", name)
+    def InputGeometry(self, name: str = "Geometry") -> Geometry:
+        self.node_tree.inputs.new("NodeSocketGeometry", name)
 
-        socket = Geometry(self.node_tree, self.group_input.outputs[self.input_counter])
-
-        self.input_counter += 1
-
-        return socket
-
-    def InputBoolean(self, name: str = "Geometry"):
-        input_boolean = self.node_tree.inputs.new("NodeSocketBool", name)
-
-        socket = Boolean(self.node_tree, self.group_input.outputs[self.input_counter])
+        node_handle = NodeHandle(self.node_tree, self.group_input)
+        socket = Geometry(node_handle, self.input_counter)
 
         self.input_counter += 1
 
         return socket
 
-    def InputFloat(self, name: str):
-        input_float = self.node_tree.inputs.new("NodeSocketFloat", name)
+    def InputBoolean(self, name: str = "Boolean") -> Boolean:
+        self.node_tree.inputs.new("NodeSocketBool", name)
 
-        socket = Scalar(self.node_tree, self.group_input.outputs[self.input_counter])
+        node_handle = NodeHandle(self.node_tree, self.group_input)
+        socket = Boolean(node_handle, self.input_counter)
 
         self.input_counter += 1
 
         return socket
 
-    def InputVector(self, name: str):
-        input_vector = self.node_tree.inputs.new("NodeSocketVector", name)
+    def InputFloat(self, name: str) -> Scalar:
+        self.node_tree.inputs.new("NodeSocketFloat", name)
 
-        socket = Vector3(self.node_tree, self.group_input.outputs[self.input_counter])
+        node_handle = NodeHandle(self.node_tree, self.group_input)
+        socket = Scalar(node_handle, self.input_counter)
+
+        self.input_counter += 1
+
+        return socket
+
+    def InputVector(self, name: str) -> Vector3:
+        self.node_tree.inputs.new("NodeSocketVector", name)
+
+        node_handle = NodeHandle(self.node_tree, self.group_input)
+        socket = Vector3(node_handle, self.input_counter)
 
         self.input_counter += 1
 
         return socket
 
     # Adding group outputs:
-    def OutputGeometry(self):
-        self.output_counter += 1
-        return self.node_tree.outputs.new("NodeSocketGeometry", "Geometry")
-
     def OutputGeometry(self, variable, name: str, tooltip: str = ""):
 
         output = self.node_tree.outputs.new("NodeSocketGeometry", name)
@@ -199,11 +197,11 @@ class GeometryNodeTree:
     # Built in attributes (menu 'Input'):
     def position(self):
         position = self.node_tree.nodes.new("GeometryNodeInputPosition")
-        return Vector(self.node_tree, position.outputs[0])
+        return Vector3(self.node_tree, position.outputs[0])
 
     def normal(self):
         normal = self.node_tree.nodes.new("GeometryNodeInputNormal")
-        return Vector(self.node_tree, normal.outputs[0])
+        return Vector3(self.node_tree, normal.outputs[0])
 
     def radius(self):
         radius = self.node_tree.nodes.new("GeometryNodeInputRadius")

@@ -2,10 +2,10 @@
 
 import bpy
 
-from .geoscript import *
-from .types import *
-from .math import *
-import math as constants
+from typing import List
+from .exceptions import BlenderTypeError
+from .geoscript import GeometryNodeTree
+from .types import AbstractSocket, Scalar, Vector3, Boolean, Geometry
 
 
 class GeometryNodeFunction(GeometryNodeTree):
@@ -14,33 +14,34 @@ class GeometryNodeFunction(GeometryNodeTree):
     def __init__(self, name: str):
         super().__init__(name)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> None | object | List[object]:
         # Add group node to node tree:
-        node_tree, node, layer = AbstractSocket.new_node([*args], "GeometryNodeGroup")
+        node = AbstractSocket.new_node([*args], "GeometryNodeGroup")
 
         # Set node group to the node tree defined in this object:
-        node.node_tree = bpy.data.node_groups[self.get_registered_name()]
+        bl_node = node.get_bl_node()
+        if not isinstance(bl_node, bpy.types.GeometryNodeGroup):
+            raise BlenderTypeError(bl_node, "bpy.types.GeometryNodeGroup")
+        bl_node.node_tree = bpy.data.node_groups[self.get_registered_name()]
 
         # Connect the arguments to the inputs of the new node:
-        index = 0
-        for socket in args:
-            AbstractSocket.connect_argument(node_tree, socket, index, node)
-            index = index + 1
+        for index, socket in enumerate(args):
+            node.connect_argument(index, socket)
 
         # Return a handle or tuple of handles of the node's outputs:
         # for output in node.outputs:
-        output_list = []
-        for output in node.outputs:
+        output_list: List[object] = []
+        for index, output in enumerate(bl_node.outputs):
             if output.type == "VALUE":
-                output_list.append(Scalar(node_tree, output, layer))
+                output_list.append(Scalar(node, index))
             elif output.type == "INT":
-                output_list.append(Scalar(node_tree, output, layer))
+                output_list.append(Scalar(node, index))
             elif output.type == "BOOLEAN":
-                output_list.append(Boolean(node_tree, output, layer))
+                output_list.append(Boolean(node, index))
             elif output.type == "VECTOR":
-                output_list.append(Vector3(node_tree, output, layer))
+                output_list.append(Vector3(node, index))
             elif output.type == "GEOMETRY":
-                output_list.append(Geometry(node_tree, output, layer))
+                output_list.append(Geometry(node, index))
             else:
                 raise ValueError(
                     "Unknown output type detected while adding"

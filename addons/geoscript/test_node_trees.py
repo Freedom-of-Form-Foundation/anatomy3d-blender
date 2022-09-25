@@ -2,10 +2,10 @@
 
 import bpy
 
-from .geoscript import *
+from .geoscript import GeometryNodeTree
 from .geofunction import geometry_function
-from .types import *
-from .raytracing import *
+from .types import Vector3, Scalar
+from .raytracing import raycast_with_attribute
 import math as m
 from . import math as g
 
@@ -83,8 +83,8 @@ class ExampleFunction(GeometryNodeTree):
         geo8 = geo3.get_curve_component()
         geo9 = geo8.get_volume_component()
         geo10 = geo9.get_instances_component()
-        geo11 = geo10.merge_all_by_distance(boolean, variable)
-        geo12 = geo11.merge_connected_by_distance(boolean, variable)
+        geo11 = geo10.merge_all_by_distance(variable, boolean)
+        geo12 = geo11.merge_connected_by_distance(variable, boolean)
         geo13 = geo12.to_instances()
         geo14 = geo13.get_bounding_box_geometry()
         geo15 = geo14.get_convex_hull()
@@ -116,11 +116,13 @@ class ExampleFunction(GeometryNodeTree):
 
         # normal_distribution(self.node_tree)
 
-        variable9 = map_range(1.0, 2.0, variable2, 0.0, 1.0)
+        variable9 = g.map_range(1.0, 2.0, variable2, 0.0, 1.0)
 
-        vector3 = map_range_vector(vector2, vector2, vector1, vector2, vector2)
+        vector3 = g.map_range_vector(vector2, vector2, vector1, vector2, vector2)
 
-        variable8 = clamp(min(multiply_add(variable4, variable3, variable5), variable2))
+        variable8 = g.clamp(
+            g.min(g.multiply_add(variable4, variable3, variable5), variable2)
+        )
 
         geometry2 = input.move_vertices(offset=vector2)
 

@@ -2,6 +2,7 @@
 
 import bpy
 
+from .exceptions import BlenderTypeError
 from .types import AbstractSocket
 from .types import Scalar
 from .types import Boolean
@@ -13,49 +14,81 @@ from .types import Vector3
 
 
 def rand_float(
-    min: Scalar | float, max: Scalar | float, id: Scalar | int, seed: Scalar | int
+    min_value: Scalar | float,
+    max_value: Scalar | float,
+    id_value: Scalar | int,
+    seed: Scalar | int,
 ) -> Scalar:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
-        [None, None, min, max, None, None, None, id, seed], "FunctionNodeRandomValue"
-    )
+    arguments = [min_value, max_value, id_value, seed]
+    node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
-    node.data_type = "FLOAT"
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
+        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    bl_node.data_type = "FLOAT"
 
-    return Scalar(node_tree, node.outputs[0], layer)
+    node.connect_argument(2, min_value)
+    node.connect_argument(3, max_value)
+    node.connect_argument(7, id_value)
+    node.connect_argument(8, seed)
+
+    return Scalar(node, 0)
 
 
 def rand_int(
-    min: Scalar | int, max: Scalar | int, id: Scalar | int, seed: Scalar | int
+    min_value: Scalar | int,
+    max_value: Scalar | int,
+    id_value: Scalar | int,
+    seed: Scalar | int,
 ) -> Scalar:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
-        [None, None, None, None, min, max, None, id, seed], "FunctionNodeRandomValue"
-    )
+    arguments = [min_value, max_value, id_value, seed]
+    node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
-    node.data_type = "INT"
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
+        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    bl_node.data_type = "INT"
 
-    return Scalar(node_tree, node.outputs[0], layer)
+    node.connect_argument(4, min_value)
+    node.connect_argument(5, max_value)
+    node.connect_argument(7, id_value)
+    node.connect_argument(8, seed)
+
+    return Scalar(node, 0)
 
 
 def rand_vector(
-    min: Vector3, max: Vector3, id: Scalar | int, seed: Scalar | int
+    min_value: Vector3, max_value: Vector3, id_value: Scalar | int, seed: Scalar | int
 ) -> Vector3:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
-        [min, max, None, None, None, None, None, id, seed], "FunctionNodeRandomValue"
-    )
+    arguments = [min_value, max_value, id_value, seed]
+    node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
-    node.data_type = "FLOAT_VECTOR"
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
+        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    bl_node.data_type = "FLOAT_VECTOR"
 
-    return Vector3(node_tree, node.outputs[0], layer)
+    node.connect_argument(0, min_value)
+    node.connect_argument(1, max_value)
+    node.connect_argument(7, id_value)
+    node.connect_argument(8, seed)
+
+    return Vector3(node, 0)
 
 
 def rand_bool(
-    probability: Scalar | float, id: Scalar | int, seed: Scalar | int
+    probability: Scalar | float, id_value: Scalar | int, seed: Scalar | int
 ) -> Boolean:
-    node_tree, node, layer = AbstractSocket.add_linked_node(
-        [None, None, None, None, None, None, probability, id, seed],
-        "FunctionNodeRandomValue",
-    )
+    arguments = [probability, id_value, seed]
+    node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
-    node.data_type = "BOOLEAN"
+    bl_node = node.get_bl_node()
+    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
+        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    bl_node.data_type = "BOOLEAN"
 
-    return Boolean(node_tree, node.outputs[0], layer)
+    node.connect_argument(6, probability)
+    node.connect_argument(7, id_value)
+    node.connect_argument(8, seed)
+
+    return Boolean(node, 0)
