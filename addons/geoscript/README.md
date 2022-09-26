@@ -7,9 +7,68 @@ developer-written code.
 
 ## Using this plugin
 
-You can write new geometry scripts by subclassing the class `GeometryFunction`.
-`GeometryFunction` will internally handle the creation of a node tree, such that you
-don't need to worry about that when you write it yourself.
+Geometry Nodes in Blender are essentially very complex functions that are executed
+over some geometry. Geoscript abstracts the nodes away and presents those functions
+as actual functions that you can write. The easiest way to get started with
+Geoscript is by creating a Geometry Function.
+
+Geometry functions can be created just like normal functions. By adding a
+`@geometry_function` decorator before the function, the function will be converted to
+a Geoscript function. For example, you can create a simple function that does
+nothing to the input as follows:
+
+```python3
+@geometry_function
+def my_function(geometry: Geometry) -> Geometry:
+    return geometry
+```
+
+As you may notice, this function uses Python type annotations. Those annotations are
+essential to add, because they allow the decorator to convert the function into
+Geometry Nodes with appropriate inputs and outputs. If you don't add type hints,
+Geoscript will not work.
+
+You can add additional inputs to the Geometry Function by adding extra arguments.
+
+```python3
+@geometry_function
+def my_function(geometry: Geometry, custom_input: Vector3) -> Geometry:
+    return geometry.move_vertices(offset=custom_input)
+```
+
+This new function will shift the geometry by the amount given by `custom_input`.
+
+There are several types in Geoscript that you can use. They correspond to node
+socket types in Blender, in case you are familiar with those. If you aren't,
+the table below summarizes the types.
+
+| Type | Description |
+| --- | --- |
+| Geometry | An object representing a 3D geometry, such as a mesh, volume, point cloud, or curve. |
+| Boolean | A field that can be either `True` or `False`. Since this is an attribute, it can be used to select different subsets of elements from a mesh. |
+| Scalar | A field that can be any floating point value. It corresponds to a `float`, and can be multiplied by a vector to scale the vector.
+| Vector3 | A field that represents a three-component vector, containing an X, Y and Z component. This can be used to represent a position of a vertex, the Euler rotation of an object, and more. |
+
+You can think of fields in a Geometry Function as things that work in parallel
+over all vertices, edges or faces in a mesh, curve, point cloud or volume. The
+value of such an object, such as a Boolean, Scalar, or Vector3 will vary per
+element.
+
+In Geoscript it is possible to write custom functions that you can re-use in a different
+Geoscript function.
+
+```python3
+@geometry_function
+def lerp(vector1: Vector3, vector2: Vector3, mix: Scalar) -> Vector3:
+    return (1.0 - mix) * vector1 + mix * vector2
+```
+
+### More complex scripts
+
+You can write new geometry scripts with more control over the inputs and outputs
+by subclassing the class `GeometryFunction`. `GeometryFunction` will internally
+handle the creation of a node tree, such that you don't need to worry about that
+when you write it yourself.
 
 ```python3
 class ExampleFunction(GeometryFunction):
