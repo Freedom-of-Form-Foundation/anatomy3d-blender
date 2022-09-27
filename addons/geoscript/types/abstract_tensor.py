@@ -11,7 +11,7 @@ class AbstractTensor(AbstractSocket):
     """
 
     @staticmethod
-    def math_operation_unary(self, operation: str = "ADD", use_clamp: bool = False):
+    def math_operation_unary(operand, operation: str = "ADD", use_clamp: bool = False):
         return NotImplemented
 
     @staticmethod

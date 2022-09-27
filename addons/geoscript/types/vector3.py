@@ -23,9 +23,9 @@ class Vector3(AbstractTensor):
 
     @staticmethod
     def math_operation_unary(
-        vector: "Vector3", operation: str = "ADD", use_clamp: bool = False
+        operand: "Vector3", operation: str = "ADD", use_clamp: bool = False
     ) -> "Vector3":
-        node = AbstractSocket.add_linked_node([vector], "ShaderNodeVectorMath")
+        node = AbstractSocket.add_linked_node([operand], "ShaderNodeVectorMath")
         bl_node = node.get_bl_node()
 
         assert isinstance(bl_node, bpy.types.ShaderNodeVectorMath)

@@ -59,6 +59,7 @@ def register():
     bpy.utils.register_class(GeoscriptTestingOperator)
     bpy.utils.register_class(GeoscriptTestingPanel)
     print("Registered GeoScript Addon")
+    print("is debug: ", __debug__)
 
 
 def unregister():
