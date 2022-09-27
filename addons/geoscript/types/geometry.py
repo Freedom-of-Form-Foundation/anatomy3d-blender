@@ -3,7 +3,6 @@
 import bpy
 
 from typing import Tuple
-from ..exceptions import BlenderTypeError
 from .abstract_socket import AbstractSocket, NodeHandle
 from .vector3 import Vector3
 from .scalar import Scalar
@@ -83,11 +82,9 @@ class Geometry(AbstractSocket):
         self, target_element: str, source_position: Vector3 = None
     ) -> Tuple[Vector3, Scalar]:
         node = self.add_linked_node([self, source_position], "GeometryNodeProximity")
+
         bl_node = node.get_bl_node()
-
-        if not isinstance(bl_node, bpy.types.GeometryNodeProximity):
-            raise BlenderTypeError(bl_node, "bpy.types.GeometryNodeProximity")
-
+        assert isinstance(bl_node, bpy.types.GeometryNodeProximity)
         bl_node.target_element = target_element
 
         position = Vector3(node, 0)

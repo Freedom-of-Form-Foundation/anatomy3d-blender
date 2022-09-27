@@ -2,7 +2,6 @@
 
 import bpy
 
-from .exceptions import BlenderTypeError
 from .types import AbstractSocket, NodeHandle, Scalar, Boolean, Vector3, Geometry
 
 
@@ -104,8 +103,7 @@ def raycast_with_attribute(
 
     # Set the Blender node's properties:
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.GeometryNodeRaycast):
-        raise BlenderTypeError(node, "bpy.types.GeometryNodeRaycast")
+    assert isinstance(bl_node, bpy.types.GeometryNodeRaycast)
     bl_node.data_type = attribute_data_type
     bl_node.mapping = attribute_mapping
 

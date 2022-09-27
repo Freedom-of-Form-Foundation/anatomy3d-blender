@@ -3,7 +3,6 @@
 import bpy
 
 from typing import Union
-from ..exceptions import BlenderTypeError
 from .abstract_socket import AbstractSocket
 from .abstract_tensor import AbstractTensor
 from .scalar import Scalar
@@ -29,8 +28,7 @@ class Vector3(AbstractTensor):
         node = AbstractSocket.add_linked_node([vector], "ShaderNodeVectorMath")
         bl_node = node.get_bl_node()
 
-        if not isinstance(bl_node, bpy.types.ShaderNodeVectorMath):
-            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeVectorMath")
+        assert isinstance(bl_node, bpy.types.ShaderNodeVectorMath)
         bl_node.operation = operation
 
         return Vector3(node, 0)
@@ -51,8 +49,7 @@ class Vector3(AbstractTensor):
         node.connect_argument(1, right)
 
         bl_node = node.get_bl_node()
-        if not isinstance(bl_node, bpy.types.ShaderNodeVectorMath):
-            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeVectorMath")
+        assert isinstance(bl_node, bpy.types.ShaderNodeVectorMath)
         bl_node.operation = operation
 
         # Connect the left argument:
