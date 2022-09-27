@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import bpy
-from typing import Optional
+from typing import Optional, Sequence
 
 
 class NodeHandle:
@@ -132,7 +132,7 @@ class AbstractSocket:
         return []
 
     @staticmethod
-    def __get_node_tree(socket_list: list[object]) -> bpy.types.NodeTree:
+    def __get_node_tree(socket_list: Sequence[object]) -> bpy.types.NodeTree:
         """Extracts the Blender node tree from a list of AbstractSockets.
 
         Extracts the bpy.types.GeometryNodeTree from a list of AbstractSockets,
@@ -179,7 +179,7 @@ class AbstractSocket:
         return node_tree
 
     @staticmethod
-    def __get_outermost_layer(socket_list: list[object], default: int = 0):
+    def __get_outermost_layer(socket_list: Sequence[object], default: int = 0):
         """Gets the visual layer position of rightmost AbstractSocket.
 
         Finds the layer index of the AbstractSocket in socket_list that is
@@ -241,7 +241,7 @@ class AbstractSocket:
 
     @staticmethod
     def add_linked_node(
-        input_list: list[object | None], node_type: str = ""
+        input_list: Sequence[object | None], node_type: str = ""
     ) -> NodeHandle:
         """Appends a node and connects its inputs.
 

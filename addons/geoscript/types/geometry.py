@@ -264,7 +264,9 @@ class Geometry(AbstractSocket):
         """
         arguments = [self, selection, merge_distance]
         node = AbstractSocket.add_linked_node(arguments, "GeometryNodeMergeByDistance")
-        node.get_bl_node().mode = "ALL"
+        bl_node = node.get_bl_node()
+        assert isinstance(bl_node, bpy.types.GeometryNodeMergeByDistance)
+        bl_node.mode = "ALL"
         return Geometry(node, 0)
 
     def merge_connected_by_distance(
@@ -289,7 +291,9 @@ class Geometry(AbstractSocket):
         """
         arguments = [self, selection, merge_distance]
         node = AbstractSocket.add_linked_node(arguments, "GeometryNodeMergeByDistance")
-        node.get_bl_node().mode = "CONNECTED"
+        bl_node = node.get_bl_node()
+        assert isinstance(bl_node, bpy.types.GeometryNodeMergeByDistance)
+        bl_node.mode = "CONNECTED"
         return Geometry(node, 0)
 
     # "Geometry to Instance" in Blender:
