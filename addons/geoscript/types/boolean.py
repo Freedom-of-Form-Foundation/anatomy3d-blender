@@ -2,7 +2,6 @@
 
 import bpy
 
-from ..exceptions import BlenderTypeError
 from .abstract_socket import AbstractSocket
 
 
@@ -36,11 +35,9 @@ class Boolean(AbstractSocket):
         node = AbstractSocket.add_linked_node([left, right], "FunctionNodeBooleanMath")
 
         bl_node = node.get_bl_node()
-
-        if not isinstance(bl_node, bpy.types.FunctionNodeBooleanMath):
-            raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeBooleanMath")
-
+        assert isinstance(bl_node, bpy.types.FunctionNodeBooleanMath)
         bl_node.operation = operation
+
         return Boolean(node, 0)
 
     # And:

@@ -2,7 +2,6 @@
 
 import bpy
 
-from .exceptions import BlenderTypeError
 from .types import AbstractSocket
 from .types import Scalar
 from .types import Boolean
@@ -23,8 +22,7 @@ def rand_float(
     node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
-        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    assert isinstance(bl_node, bpy.types.FunctionNodeRandomValue)
     bl_node.data_type = "FLOAT"
 
     node.connect_argument(2, min_value)
@@ -45,8 +43,7 @@ def rand_int(
     node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
-        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    assert isinstance(bl_node, bpy.types.FunctionNodeRandomValue)
     bl_node.data_type = "INT"
 
     node.connect_argument(4, min_value)
@@ -64,8 +61,7 @@ def rand_vector(
     node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
-        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    assert isinstance(bl_node, bpy.types.FunctionNodeRandomValue)
     bl_node.data_type = "FLOAT_VECTOR"
 
     node.connect_argument(0, min_value)
@@ -83,8 +79,7 @@ def rand_bool(
     node = AbstractSocket.new_node(arguments, "FunctionNodeRandomValue")
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.FunctionNodeRandomValue):
-        raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeRandomValue")
+    assert isinstance(bl_node, bpy.types.FunctionNodeRandomValue)
     bl_node.data_type = "BOOLEAN"
 
     node.connect_argument(6, probability)

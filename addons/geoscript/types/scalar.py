@@ -3,7 +3,6 @@
 import bpy
 
 from typing import Optional, Union
-from ..exceptions import BlenderTypeError
 from .abstract_socket import AbstractSocket
 from .abstract_tensor import AbstractTensor
 from .boolean import Boolean
@@ -29,8 +28,7 @@ class Scalar(AbstractTensor):
         node = scalar.add_linked_node([scalar], "ShaderNodeMath")
 
         bl_node = node.get_bl_node()
-        if not isinstance(bl_node, bpy.types.ShaderNodeMath):
-            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
+        assert isinstance(bl_node, bpy.types.ShaderNodeMath)
         bl_node.operation = operation
         bl_node.use_clamp = use_clamp
 
@@ -53,8 +51,7 @@ class Scalar(AbstractTensor):
         node = AbstractSocket.add_linked_node([left, right], "ShaderNodeMath")
 
         bl_node = node.get_bl_node()
-        if not isinstance(bl_node, bpy.types.ShaderNodeMath):
-            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
+        assert isinstance(bl_node, bpy.types.ShaderNodeMath)
         bl_node.operation = operation
         bl_node.use_clamp = use_clamp
 
@@ -71,8 +68,7 @@ class Scalar(AbstractTensor):
         node = AbstractSocket.add_linked_node([left, middle, right], "ShaderNodeMath")
 
         bl_node = node.get_bl_node()
-        if not isinstance(bl_node, bpy.types.ShaderNodeMath):
-            raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
+        assert isinstance(bl_node, bpy.types.ShaderNodeMath)
         bl_node.operation = operation
         bl_node.use_clamp = use_clamp
 
@@ -95,14 +91,12 @@ class Scalar(AbstractTensor):
 
         arguments = [left, right, epsilon]
         node = AbstractSocket.add_linked_node(arguments, "FunctionNodeCompare")
-        bl_node = node.get_bl_node()
-        if not isinstance(bl_node, bpy.types.FunctionNodeCompare):
-            raise BlenderTypeError(bl_node, "bpy.types.FunctionNodeCompare")
 
+        bl_node = node.get_bl_node()
+        assert isinstance(bl_node, bpy.types.FunctionNodeCompare)
         bl_node.operation = operation
         bl_node.data_type = "FLOAT"
-        if hasattr(bl_node, "mode"):
-            bl_node.mode = mode
+        bl_node.mode = mode
 
         return Boolean(node, 0)
 

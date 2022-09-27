@@ -5,7 +5,6 @@
 import bpy
 
 import builtins
-from .exceptions import BlenderTypeError
 from .types import AbstractSocket
 from .types import Scalar
 from .types import Boolean
@@ -95,9 +94,7 @@ def clamp(scalar: Scalar) -> Scalar:
     node = AbstractSocket.new_node([scalar], "ShaderNodeMath")
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.ShaderNodeMath):
-        raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMath")
-
+    assert isinstance(bl_node, bpy.types.ShaderNodeMath)
     bl_node.operation = "ADD"
     bl_node.use_clamp = True
 
@@ -258,9 +255,7 @@ def map_range(
     )
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.ShaderNodeMapRange):
-        raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMapRange")
-
+    assert isinstance(bl_node, bpy.types.ShaderNodeMapRange)
     bl_node.clamp = False
     bl_node.interpolation_type = interpolation_type
     bl_node.data_type = "FLOAT"
@@ -296,9 +291,7 @@ def map_range_vector(
     )
 
     bl_node = node.get_bl_node()
-    if not isinstance(bl_node, bpy.types.ShaderNodeMapRange):
-        raise BlenderTypeError(bl_node, "bpy.types.ShaderNodeMapRange")
-
+    assert isinstance(bl_node, bpy.types.ShaderNodeMapRange)
     bl_node.clamp = False
     bl_node.interpolation_type = interpolation_type
     bl_node.data_type = "FLOAT_VECTOR"

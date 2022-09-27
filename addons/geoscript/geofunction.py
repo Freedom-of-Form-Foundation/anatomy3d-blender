@@ -3,7 +3,6 @@
 import bpy
 
 from typing import List
-from .exceptions import BlenderTypeError
 from .geoscript import GeometryNodeTree
 from .types import AbstractSocket, Scalar, Vector3, Boolean, Geometry
 
@@ -20,8 +19,7 @@ class GeometryNodeFunction(GeometryNodeTree):
 
         # Set node group to the node tree defined in this object:
         bl_node = node.get_bl_node()
-        if not isinstance(bl_node, bpy.types.GeometryNodeGroup):
-            raise BlenderTypeError(bl_node, "bpy.types.GeometryNodeGroup")
+        assert isinstance(bl_node, bpy.types.GeometryNodeGroup)
         bl_node.node_tree = bpy.data.node_groups[self.get_registered_name()]
 
         # Connect the arguments to the inputs of the new node:
