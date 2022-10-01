@@ -121,7 +121,7 @@ class ExampleFunction(GeometryNodeTree):
         vector3 = g.map_range_vector(vector2, vector2, vector1, vector2, vector2)
 
         variable8 = g.clamp(
-            g.min(g.multiply_add(variable4, variable3, variable5), variable2)
+            g.minimum(g.multiply_add(variable4, variable3, variable5), variable2)
         )
 
         geometry2 = input.move_vertices(offset=vector2)

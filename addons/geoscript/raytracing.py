@@ -1,25 +1,34 @@
 #!/usr/bin/python3
 
+"""Functions and classes for calculating ray-mesh intersections in GeoScript."""
+
 import bpy
 
 from .types import AbstractSocket, NodeHandle, Scalar, Boolean, Vector3, Geometry
 
 
 class RayHit(NodeHandle):
+    """The intersection point between a ray and a mesh, if hit."""
+
     def is_hit(self) -> Boolean:
+        """True only if the ray intersects the mesh it was casted to."""
         return Boolean(self, 0)
 
     def hit_position(self) -> Vector3:
+        """The 3D location where the ray intersects the mesh."""
         return Vector3(self, 1)
 
     def hit_normal(self) -> Vector3:
+        """The normal vector of the point on the mesh where the ray intersects."""
         return Vector3(self, 2)
 
     def hit_distance(self) -> Scalar:
+        """The distance between the ray start point and the intersection point."""
         return Scalar(self, 3)
 
     def attribute(self) -> Scalar | Boolean | Vector3 | None:
-        if self.get_output(4).type == "VALUE":
+        """The value of the selected attribute stored on the mesh at the ray hit."""
+        if self.get_output(4).type == "VALUE":  # "VALUE" stands for float in Blender.
             return Scalar(self, 4)
         elif self.get_output(4).type == "INT":
             return Scalar(self, 4)
@@ -72,6 +81,11 @@ def raycast_with_attribute(
     Returns:
         A RayHit instance that contains the outputs of the ray cast.
     """
+    # Blender uses a different argument index for the input attribute
+    # depending on `attribute_data_type`. Hence we need to fill
+    # part of the `arguments` list with empty sockets, and then
+    # connect the attribute input to the correct socket based on
+    # `attribute_data_type`.
     arguments = [
         target_geometry,
         None,
