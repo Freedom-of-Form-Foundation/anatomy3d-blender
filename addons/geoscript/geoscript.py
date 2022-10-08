@@ -2,7 +2,15 @@
 
 import bpy
 
-from .types import AbstractSocket, NodeHandle, Geometry, Vector3, Scalar, Boolean
+from .types import (
+    AbstractSocket,
+    NodeHandle,
+    Geometry,
+    Vector3,
+    Scalar,
+    Boolean,
+    Object,
+)
 
 
 class GeometryNodeTree:
@@ -37,6 +45,8 @@ class GeometryNodeTree:
         self.group_input = self.node_tree.nodes.new("NodeGroupInput")
         self.group_output = self.node_tree.nodes.new("NodeGroupOutput")
 
+        self.attributes = self.GeometryNodeAttributes(self.node_tree)
+
     def get_registered_name(self):
         return self.__registered_name
 
@@ -66,7 +76,7 @@ class GeometryNodeTree:
 
         return socket
 
-    def InputFloat(self, name: str) -> Scalar:
+    def InputFloat(self, name: str = "Float") -> Scalar:
         self.node_tree.inputs.new("NodeSocketFloat", name)
 
         node_handle = NodeHandle(self.node_tree, self.group_input)
@@ -76,11 +86,21 @@ class GeometryNodeTree:
 
         return socket
 
-    def InputVector(self, name: str) -> Vector3:
+    def InputVector(self, name: str = "Vector") -> Vector3:
         self.node_tree.inputs.new("NodeSocketVector", name)
 
         node_handle = NodeHandle(self.node_tree, self.group_input)
         socket = Vector3(node_handle, self.input_counter)
+
+        self.input_counter += 1
+
+        return socket
+
+    def InputObject(self, name: str = "Object") -> Object:
+        self.node_tree.inputs.new("NodeSocketObject", name)
+
+        node_handle = NodeHandle(self.node_tree, self.group_input)
+        socket = Object(node_handle, self.input_counter)
 
         self.input_counter += 1
 
@@ -194,33 +214,60 @@ class GeometryNodeTree:
 
         return output
 
-    # Built in attributes (menu 'Input'):
-    def position(self):
-        position = self.node_tree.nodes.new("GeometryNodeInputPosition")
-        return Vector3(self.node_tree, position.outputs[0])
+    class GeometryNodeAttributes:
+        """Standard input attributes for GeometryNodeTree"""
 
-    def normal(self):
-        normal = self.node_tree.nodes.new("GeometryNodeInputNormal")
-        return Vector3(self.node_tree, normal.outputs[0])
+        def __init__(self, bl_node_tree: bpy.types.GeometryNodeTree):
+            self.bl_node_tree = bl_node_tree
 
-    def radius(self):
-        radius = self.node_tree.nodes.new("GeometryNodeInputRadius")
-        return Scalar(self.node_tree, radius.outputs[0])
+        def add_node(self, node_type_name: str, layer: int = 0) -> NodeHandle:
+            bl_node = self.bl_node_tree.nodes.new(node_type_name)
+            return NodeHandle(self.bl_node_tree, bl_node, layer)
 
-    def ID(self):
-        ID = self.node_tree.nodes.new("GeometryNodeInputID")
-        return Scalar(self.node_tree, ID.outputs[0])
+        # Built in attributes (menu 'Input'):
+        @property
+        def position(self) -> Vector3:
+            position = self.add_node("GeometryNodeInputPosition")
+            return Vector3(position, 0)
 
-    def named_attribute(self, attribute_name: str, data_type: str = "FLOAT"):
-        attribute = self.node_tree.nodes.new("GeometryNodeInputNamedAttribute")
-        attribute.inputs[0].default_value = attribute_name
-        attribute.data_type = data_type
-        return Scalar(self.node_tree, attribute.outputs[0])
+        @property
+        def normal(self) -> Vector3:
+            normal = self.add_node("GeometryNodeInputNormal")
+            return Vector3(normal, 0)
 
-    def scene_time_seconds(self, attribute_name: str, data_type: str = "FLOAT"):
-        seconds = self.node_tree.nodes.new("GeometryNodeInputSceneTime")
-        return Scalar(self.node_tree, seconds.outputs[0])
+        @property
+        def radius(self) -> Scalar:
+            radius = self.add_node("GeometryNodeInputRadius")
+            return Scalar(radius, 0)
 
-    def scene_time_frame(self, attribute_name: str, data_type: str = "FLOAT"):
-        frame = self.node_tree.nodes.new("GeometryNodeInputSceneTime")
-        return Scalar(self.node_tree, frame.outputs[1])
+        @property
+        def element_id(self) -> Scalar:
+            element_id = self.add_node("GeometryNodeInputID")
+            return Scalar(element_id, 0)
+
+        def get_named_attribute(
+            self, attribute_name: str, data_type: str = "FLOAT"
+        ) -> Scalar:
+            node_handle = self.add_node("GeometryNodeInputNamedAttribute")
+
+            bl_node = node_handle.get_bl_node()
+            assert isinstance(bl_node, bpy.types.GeometryNodeInputNamedAttribute)
+            bl_node.data_type = data_type
+
+            node_handle.connect_argument(0, attribute_name)
+
+            return Scalar(node_handle, 0)
+
+        def is_viewport(self) -> Boolean:
+            is_viewport = self.add_node("GeometryNodeIsViewport")
+            return Boolean(is_viewport, 0)
+
+        @property
+        def scene_time_seconds(self) -> Scalar:
+            seconds_and_frames = self.add_node("GeometryNodeInputSceneTime")
+            return Scalar(seconds_and_frames, 0)
+
+        @property
+        def scene_time_frame(self) -> Scalar:
+            seconds_and_frames = self.add_node("GeometryNodeInputSceneTime")
+            return Scalar(seconds_and_frames, 1)

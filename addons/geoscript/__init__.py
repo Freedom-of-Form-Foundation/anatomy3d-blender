@@ -32,6 +32,7 @@ class GeoscriptTestingOperator(bpy.types.Operator):
         test_normal_distribution = test_node_trees.NormalDistribution(
             "common.normal_distribution"
         )
+        test_tubercule = test_node_trees.Tubercule("tubercule")
         return {"FINISHED"}
 
 

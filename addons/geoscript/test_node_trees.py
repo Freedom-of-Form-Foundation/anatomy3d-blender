@@ -21,6 +21,29 @@ def lerp(vector1: Vector3, vector2: Vector3, mix: Scalar) -> Vector3:
     return (1.0 - mix) * vector1 + mix * vector2
 
 
+class Tubercule(GeometryNodeTree):
+    """Extrudes geometry in the shape of a tubercule."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+
+        attributes = self.attributes
+
+        # Inputs:
+        geometry = self.InputGeometry("Geometry")
+        tubercule_object = self.InputObject("Object")
+
+        # Code:
+        tubercule_geometry = tubercule_object.get_geometry(relative=True)
+        position, distance = tubercule_geometry.get_closest_edge(attributes.position)
+        falloff = normal_distribution(distance, 0.0, 0.2)
+        offset = g.clamp(g.map_range(falloff, 0.0, 4.3, 0.0, 0.6)) * attributes.normal
+        output = geometry.move_vertices(offset=offset)
+
+        # Outputs:
+        self.OutputGeometry(output, "Geometry")
+
+
 class LERP(GeometryNodeTree):
     """Linear interpolation of vectors."""
 

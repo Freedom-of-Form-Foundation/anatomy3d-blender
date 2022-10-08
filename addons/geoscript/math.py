@@ -133,6 +133,9 @@ def clamp(scalar: Scalar) -> Scalar:
     if isinstance(bl_node, bpy.types.ShaderNodeMath):
         bl_node.use_clamp = True
         return scalar
+    elif isinstance(bl_node, bpy.types.ShaderNodeMapRange):
+        bl_node.clamp = True
+        return scalar
 
     node = AbstractSocket.new_node([scalar], "ShaderNodeMath")
 
