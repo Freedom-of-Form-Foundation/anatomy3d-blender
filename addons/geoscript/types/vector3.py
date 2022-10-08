@@ -46,7 +46,12 @@ class Vector3(AbstractTensor):
             return NotImplemented
 
         node = AbstractSocket.new_node([left, right], "ShaderNodeVectorMath")
-        node.connect_argument(1, right)
+
+        # Choose a different socket when performing a vector-scalar multiplication:
+        if isinstance(left, Scalar | float):
+            node.connect_argument(0, right)
+        else:
+            node.connect_argument(1, right)
 
         bl_node = node.get_bl_node()
         assert isinstance(bl_node, bpy.types.ShaderNodeVectorMath)

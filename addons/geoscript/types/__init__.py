@@ -6,6 +6,7 @@ from .boolean import Boolean
 from .scalar import Scalar
 from .vector3 import Vector3
 from .geometry import Geometry
+from .object import Object
 
 __all__ = [
     "AbstractSocket",
@@ -15,4 +16,5 @@ __all__ = [
     "Vector3",
     "Geometry",
     "NodeHandle",
+    "Object",
 ]
