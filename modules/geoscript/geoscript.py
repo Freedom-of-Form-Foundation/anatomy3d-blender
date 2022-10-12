@@ -3,7 +3,6 @@
 import bpy
 
 from .types import (
-    AbstractSocket,
     NodeHandle,
     Geometry,
     Vector3,
@@ -13,8 +12,19 @@ from .types import (
 )
 
 
+def check_overlap(
+    bl_node1: bpy.types.Node, bl_node2: bpy.types.Node, padding: float = 20.0
+) -> bool:
+    return (
+        bl_node1.location[0] + bl_node1.width + padding >= bl_node2.location[0]
+        and bl_node1.location[0] <= bl_node2.location[0] + bl_node2.width + padding
+        and bl_node1.location[1] + bl_node2.height + padding >= bl_node2.location[1]
+        and bl_node1.location[1] <= bl_node2.location[1] + bl_node2.height + padding
+    )
+
+
 class GeometryNodeTree:
-    """Generate geometry node trees. Corresponds to a GeometryNodeTree."""
+    """Geoscript-specific wrapper for bpy.types.GeometryNodeTree."""
 
     def __init__(self, name: str):
         self.__registered_name = name
@@ -47,13 +57,34 @@ class GeometryNodeTree:
 
         self.attributes = self.GeometryNodeAttributes(self.node_tree)
 
+        self.function()
+
+        self.beautify_node_tree()
+
+    def function(self) -> None:
+        """The Geoscript code that represents the node tree."""
+        pass
+
     def get_registered_name(self):
         return self.__registered_name
 
-    def __shift_output_node(self, layer):
+    def __shift_output_node(self, layer: int):
+        """Visually shifts the "Output Node" to the right for better readability."""
         if layer > self.output_layer:
             self.group_output.location = (200.0 * layer, 0.0)
             self.output_layer = layer
+
+    def beautify_node_tree(self) -> None:
+        """Visually moves the nodes around in the node tree for better readability."""
+        bl_tree = self.node_tree
+
+        # Shift down all nodes that overlap:
+        for bl_node in bl_tree.nodes:
+            for other_node in bl_tree.nodes:
+                if bl_node == other_node:
+                    continue
+                if check_overlap(bl_node, other_node) is True:
+                    other_node.location[1] -= bl_node.height + 140.0
 
     # Adding group inputs:
     def InputGeometry(self, name: str = "Geometry") -> Geometry:

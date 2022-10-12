@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import hashlib
+
 import bpy
 
 from typing import List
@@ -55,6 +57,18 @@ class GeometryNodeFunction(GeometryNodeTree):
             return output_list
 
 
+def generate_unique_name(f):
+    modules = f.__module__.split('.geoscript.')
+    prefix = "[common] " if len(modules) > 1 else "[script] "
+    unique_name = prefix + modules[-1] + ":" + f.__qualname__
+
+    # Blender truncates names longer than 63 characters.
+    if len(unique_name) > 63:
+        unique_name = prefix + unique_name[-(63 - len(prefix)):]
+
+    return unique_name
+
+
 def geometry_function(f):
     """Function decorator that generates a geoscript."""
 
@@ -63,7 +77,7 @@ def geometry_function(f):
         inputs = []
 
         # Register a new GeometryNodeTree with a unique name:
-        unique_name = f.__module__ + "." + f.__qualname__
+        unique_name = generate_unique_name(f)
         script = GeometryNodeFunction(unique_name)
 
         # TODO: Detect if the node tree already is registered.
@@ -103,6 +117,8 @@ def geometry_function(f):
             script.OutputBoolean(output, name)
         elif isinstance(output, Geometry):
             script.OutputGeometry(output, name)
+
+        script.beautify_node_tree()
 
         # Return a handle to the geometry script, which is callable. When the
         # script is called using __call__, it returns a handle to a newly
