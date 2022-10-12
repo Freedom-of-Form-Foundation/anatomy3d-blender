@@ -4,7 +4,7 @@ import bpy
 
 from .geoscript import GeometryNodeTree
 from .geofunction import geometry_function
-from .types import Vector3, Scalar
+from .types import Vector3, Scalar, Geometry, Boolean, Object
 from .raytracing import raycast_with_attribute
 import math as m
 from . import math as g
@@ -21,12 +21,33 @@ def lerp(vector1: Vector3, vector2: Vector3, mix: Scalar) -> Vector3:
     return (1.0 - mix) * vector1 + mix * vector2
 
 
+@geometry_function
+def hill_equation(
+    value: Scalar, x_midpoint: Scalar | float, hill_coefficient: Scalar | float = 2.0
+) -> Scalar:
+    return 1.0 / (1.0 + g.power(x_midpoint / value, hill_coefficient))
+
+
+@geometry_function
+def deformation_by_joint(
+    bone: Geometry,
+    joint: Object,
+    falloff: Scalar,
+    vertex_position: Vector3,
+    vertex_normal: Vector3,
+) -> tuple[Geometry, Boolean]:
+    joint_geometry = joint.get_geometry(relative=True)
+    ray_hit = joint_geometry.raycast(vertex_position, vertex_normal, 100.0, falloff)
+    mix = hill_equation(ray_hit.attribute(), 0.5)
+    vertex_position = lerp(vertex_position, ray_hit.hit_position(), mix)
+    bone.move_vertices(vertex_position, selection=ray_hit.is_hit())
+    return (bone, ray_hit.is_hit())
+
+
 class Tubercule(GeometryNodeTree):
     """Extrudes geometry in the shape of a tubercule."""
 
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
-
+    def function(self) -> None:
         attributes = self.attributes
 
         # Inputs:
@@ -47,9 +68,7 @@ class Tubercule(GeometryNodeTree):
 class LERP(GeometryNodeTree):
     """Linear interpolation of vectors."""
 
-    def __init__(self, name: str):
-        super().__init__(name)
-
+    def function(self):
         # Inputs:
         vector1 = self.InputVector("Vector 1")
         vector2 = self.InputVector("Vector 2")
@@ -65,9 +84,7 @@ class LERP(GeometryNodeTree):
 class NormalDistribution(GeometryNodeTree):
     """The normal distribution function, also known as a bell curve."""
 
-    def __init__(self, name: str):
-        super().__init__(name)
-
+    def function(self):
         # Inputs:
         x = self.InputFloat("x")
         mu = self.InputFloat("mu")
@@ -84,9 +101,7 @@ class NormalDistribution(GeometryNodeTree):
 class ExampleFunction(GeometryNodeTree):
     """Add tubercules to bones"""
 
-    def __init__(self, name: str):
-        super().__init__(name)
-
+    def function(self):
         # Add new nodes to the tree:
         input = self.InputGeometry()
         variable = self.InputFloat("Float Input")

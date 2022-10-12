@@ -77,7 +77,7 @@ class NodeHandle:
                 | bpy.types.NodeSocketFloatPercentage
                 | bpy.types.NodeSocketFloatTime
                 | bpy.types.NodeSocketFloatTimeAbsolute
-                | bpy.types.NodeSocketFloatUnsigned,
+                | bpy.types.NodeSocketFloatUnsigned
             ):
                 current_input.default_value = socket
         elif isinstance(socket, int):
