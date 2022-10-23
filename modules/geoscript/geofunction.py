@@ -1,11 +1,9 @@
 #!/usr/bin/python3
 
-import hashlib
-
 import bpy
 
 from typing import List
-from .geoscript import GeometryNodeTree
+from .nodetrees import GeometryNodeTree
 from .types import AbstractSocket, Scalar, Vector3, Boolean, Geometry
 
 

@@ -2,14 +2,7 @@
 
 import bpy
 
-from .types import (
-    NodeHandle,
-    Geometry,
-    Vector3,
-    Scalar,
-    Boolean,
-    Object,
-)
+from .types import NodeHandle, Geometry, Vector3, Scalar, Boolean, Object
 
 
 def check_overlap(
@@ -67,6 +60,9 @@ class GeometryNodeTree:
 
     def get_registered_name(self):
         return self.__registered_name
+
+    def get_bl_tree(self):
+        return self.node_tree
 
     def __shift_output_node(self, layer: int):
         """Visually shifts the "Output Node" to the right for better readability."""
