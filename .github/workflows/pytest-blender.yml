@@ -1,0 +1,60 @@
+name: pytest-blender
+
+on:
+  push:
+    branches:
+      - main
+      - geoscript-pytest-configuration
+  pull_request:
+    branches:
+      - main
+      - geoscript-pytest-mypy-ci
+
+jobs:
+  test:
+    name: Test with Blender ${{ matrix.blender-version }} on ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+          - macOS-latest
+        blender-version:
+          - '3.3.0'
+          - '3.3.1'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python v3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Upgrade PIP
+        run: python -m pip install --upgrade pip
+      - name: Cache Blender ${{ matrix.blender-version }}
+        uses: actions/cache@v3
+        id: cache-blender
+        with:
+          path: |
+            ~/blender-*
+            ~/_blender-executable-path.txt
+          key: ${{ runner.os }}-${{ matrix.blender-version }}
+      - name: Download Blender ${{ matrix.blender-version }}
+        if: steps.cache-blender.outputs.cache-hit != 'true'
+        id: download-blender
+        run: |
+          python -m pip install --upgrade blender-downloader
+          printf "%s" "$(blender-downloader \
+          ${{ matrix.blender-version }} --extract --remove-compressed \
+          --output-directory ~/ \
+          --quiet --print-blender-executable)" > ~/_blender-executable-path.txt
+      - name: Install dependencies
+        id: install-dependencies
+        run: |
+          python -m pip install pytest-blender pytest
+          blender_executable="$(< ~/_blender-executable-path.txt)"
+          python_blender_executable="$(pytest-blender --blender-executable $blender_executable)"
+          $python_blender_executable -m ensurepip
+          $python_blender_executable -m pip install pytest
+          echo "blender-executable=$blender_executable" >> $GITHUB_OUTPUT
+      - name: Test with pytest
+        run: pytest -svv --blender-executable "${{ steps.install-dependencies.outputs.blender-executable }}"
