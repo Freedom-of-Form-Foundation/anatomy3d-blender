@@ -89,11 +89,11 @@ def geometry_function(f):
 
             # Add the node input:
             if annotation == Scalar or annotation == Scalar | float:
-                inputs.append(script.InputFloat(name))
+                inputs.append(script.inputs.add_float(name))
             elif annotation == Vector3:
-                inputs.append(script.InputVector(name))
+                inputs.append(script.inputs.add_vector(name))
             elif annotation == Geometry:
-                inputs.append(script.InputGeometry(name))
+                inputs.append(script.inputs.add_geometry(name))
             else:
                 raise TypeError(
                     "Geometry functions must have arguments"
@@ -108,13 +108,13 @@ def geometry_function(f):
 
         # Add the node output:
         if isinstance(output, Scalar):
-            script.OutputFloat(output, name)
+            script.outputs.add_float(output, name)
         elif isinstance(output, Vector3):
-            script.OutputVector(output, name)
+            script.outputs.add_vector(output, name)
         elif isinstance(output, Boolean):
-            script.OutputBoolean(output, name)
+            script.outputs.add_boolean(output, name)
         elif isinstance(output, Geometry):
-            script.OutputGeometry(output, name)
+            script.outputs.add_geometry(output, name)
 
         script.beautify_node_tree()
 

@@ -10,7 +10,7 @@ def test_geometry_node_tree_class() -> None:
     class ExampleTree(GeometryNodeTree):
         def function(self):
             # Add new nodes to the tree:
-            input1 = self.InputGeometry()
+            input1 = self.inputs.add_geometry()
 
     example_tree = ExampleTree("test_function")
     bl_tree = example_tree.get_bl_tree()
@@ -25,15 +25,15 @@ def test_geometry_node_tree_class() -> None:
 
 def add_input(example_tree: GeometryNodeTree, bpy_type: str) -> None:
     if bpy_type == "VALUE":
-        example_tree.InputFloat()
+        example_tree.inputs.add_float()
     elif bpy_type == "BOOLEAN":
-        example_tree.InputBoolean()
+        example_tree.inputs.add_boolean()
     elif bpy_type == "VECTOR":
-        example_tree.InputVector()
+        example_tree.inputs.add_vector()
     elif bpy_type == "OBJECT":
-        example_tree.InputObject()
+        example_tree.inputs.add_object()
     elif bpy_type == "GEOMETRY":
-        example_tree.InputGeometry()
+        example_tree.inputs.add_geometry()
 
 
 test_input_types = [
