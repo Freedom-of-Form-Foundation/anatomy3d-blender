@@ -13,12 +13,7 @@ class Vector3(AbstractTensor):
 
     @staticmethod
     def get_bl_idnames() -> list[str]:
-        """Returns a list of Blender socket types that this class represents.
-
-        Returns:
-            List of strings corresponding to Blender Geometry Nodes socket
-            types.
-        """
+        """Returns a list of Blender socket types that this class represents."""
         return ["VECTOR"]
 
     @staticmethod

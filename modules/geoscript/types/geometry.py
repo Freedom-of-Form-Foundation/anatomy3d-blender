@@ -313,7 +313,7 @@ class Geometry(AbstractSocket):
     def __get_bounding_box_node(self) -> NodeHandle:
         previous_node = self.socket_reference.node
         if previous_node.bl_idname == "GeometryNodeBoundBox":
-            return NodeHandle(self.node_tree, previous_node, self.layer)
+            return NodeHandle(self.node_tree, previous_node)
         else:
             return AbstractSocket.add_linked_node([self], "GeometryNodeBoundBox")
 
@@ -460,4 +460,4 @@ class Geometry(AbstractSocket):
         bl_node.data_type = attribute_data_type
         bl_node.mapping = attribute_mapping
 
-        return self.RayHit(node.get_bl_tree(), node.get_bl_node(), node.get_layer())
+        return self.RayHit(node.get_bl_tree(), node.get_bl_node())

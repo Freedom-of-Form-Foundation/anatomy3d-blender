@@ -53,9 +53,9 @@ test_tertiary_operations = [
 @pytest.mark.parametrize("test_function,test_operation_name", test_tertiary_operations)
 def test_tertiary(test_function, test_operation_name: str):
     tree = GeometryNodeTree("test_add_input")
-    input1 = tree.InputFloat()
-    input2 = tree.InputFloat()
-    input3 = tree.InputFloat()
+    input1 = tree.inputs.add_float()
+    input2 = tree.inputs.add_float()
+    input3 = tree.inputs.add_float()
     output = test_function(input1, input2, input3)
     # Check if the sockets are linked:
     bl_node = output.socket_reference.node
@@ -77,8 +77,8 @@ def test_tertiary(test_function, test_operation_name: str):
 @pytest.mark.parametrize("test_function,test_operation_name", test_binary_operations)
 def test_binary(test_function, test_operation_name: str):
     tree = GeometryNodeTree("test_add_input")
-    input1 = tree.InputFloat()
-    input2 = tree.InputFloat()
+    input1 = tree.inputs.add_float()
+    input2 = tree.inputs.add_float()
     output = test_function(input1, input2)
     # Check if the sockets are linked:
     bl_node = output.socket_reference.node
@@ -98,8 +98,8 @@ def test_binary(test_function, test_operation_name: str):
 @pytest.mark.parametrize("test_function,test_operation_name", test_swapped_operations)
 def test_swapped_binary(test_function, test_operation_name: str):
     tree = GeometryNodeTree("test_add_input")
-    input1 = tree.InputFloat()
-    input2 = tree.InputFloat()
+    input1 = tree.inputs.add_float()
+    input2 = tree.inputs.add_float()
     output = test_function(input1, input2)
     # Check if the sockets are linked:
     bl_node = output.socket_reference.node
@@ -119,7 +119,7 @@ def test_swapped_binary(test_function, test_operation_name: str):
 @pytest.mark.parametrize("test_function,test_operation_name", test_unary_operations)
 def test_unary(test_function, test_operation_name: str):
     tree = GeometryNodeTree("test_add_input")
-    input1 = tree.InputFloat()
+    input1 = tree.inputs.add_float()
     output = test_function(input1)
     # Check if the sockets are linked:
     bl_node = output.socket_reference.node
