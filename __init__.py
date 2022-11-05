@@ -36,10 +36,10 @@ class GeoscriptTestingOperator(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class GeoscriptTestingPanel(bpy.types.Panel):
+class TEXT_EDITOR_PT_GeoscriptTestingPanel(bpy.types.Panel):
     """Creates a Panel in the text editor window"""
 
-    bl_label = "Hello World Panel"
+    bl_label = "_PT_Hello World Panel"
     bl_space_type = "TEXT_EDITOR"
     bl_category = "GeoScript"
     bl_region_type = "UI"
@@ -58,13 +58,13 @@ class GeoscriptTestingPanel(bpy.types.Panel):
 
 def register():
     bpy.utils.register_class(GeoscriptTestingOperator)
-    bpy.utils.register_class(GeoscriptTestingPanel)
+    bpy.utils.register_class(TEXT_EDITOR_PT_GeoscriptTestingPanel)
     print("Registered Anatomy Re-engineering Framework Addon")
 
 
 def unregister():
     bpy.utils.unregister_class(GeoscriptTestingOperator)
-    bpy.utils.unregister_class(GeoscriptTestingPanel)
+    bpy.utils.unregister_class(TEXT_EDITOR_PT_GeoscriptTestingPanel)
     print("Unregistered Anatomy Re-engineering Framework Addon")
 
 
