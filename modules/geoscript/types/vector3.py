@@ -91,3 +91,10 @@ class Vector3(AbstractTensor):
     def z(self) -> Scalar:
         self.check_or_create_separation_node()
         return Scalar(self.separate_xyz_node, 2)
+
+    @staticmethod
+    def from_floats(
+        x: Scalar | float, y: Scalar | float, z: Scalar | float
+    ) -> "Vector3":
+        node = AbstractSocket.new_node([x, y, z], "ShaderNodeCombineXYZ")
+        return Vector3(node, 0)
