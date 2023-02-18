@@ -312,19 +312,14 @@ class GeometryNodeTree:
             min_value: float = float("-inf"),
             max_value: float = float("inf"),
         ):
-
             output = self.bl_node_tree.outputs.new("NodeSocketVector", name)
             assert isinstance(output, bpy.types.NodeSocketInterfaceVector)
             output.description = tooltip
             output.attribute_domain = attribute_domain
             output.default_attribute_name = default_attribute_name
-
             if len(default_value) != 3:
                 raise ValueError("default_value is not an array of size 3.")
-
-            for i in range(0, 2):
-                output.default_value[i] = default_value[i]
-
+            output.default_value = default_value
             output.min_value = min_value
             output.max_value = max_value
 
