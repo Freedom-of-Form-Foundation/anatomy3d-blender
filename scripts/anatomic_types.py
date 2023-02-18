@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from typing import TYPE_CHECKING
 import math
 import bpy
 from ..modules.geoscript import nodetrees
@@ -99,60 +100,70 @@ ARF_Enum_JointType = [
 class ARF_HingeJointProperties(bpy.types.PropertyGroup):
     """CollectionProperty"""
 
-    angle1: bpy.props.FloatProperty(
-        name="Angle 1",
-        description="The starting angle of a hingejoint.",
-        min=-math.pi,
-        max=math.pi,
-        step=0.1 * math.pi,
-    )
-    angle2: bpy.props.FloatProperty(
-        name="Angle 2",
-        description="The ending angle of a hingejoint.",
-        min=-math.pi,
-        max=math.pi,
-        step=0.1 * math.pi,
-    )
-    smoothness_angle1: bpy.props.FloatProperty(
-        name="Angle 1 Smoothness",
-        description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the wedge's start angle.",
-        min=0.0,
-        max=10.0,
-        step=0.1,
-    )
-    smoothness_angle2: bpy.props.FloatProperty(
-        name="Angle 2 Smoothness",
-        description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the wedge's end angle.",
-        min=0.0,
-        max=10.0,
-        step=0.1,
-    )
-    smoothness_cap1: bpy.props.FloatProperty(
-        name="Cap 1 Smoothness",
-        description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the cylinder's start cap.",
-        min=0.0,
-        max=10.0,
-        step=0.1,
-    )
-    smoothness_cap2: bpy.props.FloatProperty(
-        name="Cap 2 Smoothness",
-        description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the cylinder's end cap.",
-        min=0.0,
-        max=10.0,
-        step=0.1,
-    )
-    resolution_arc: bpy.props.IntProperty(
-        name="Arc Resolution",
-        description="The amount of subdivisions over the arc of the cylinder. Higher is more precise, lower is faster.",
-        min=1,
-        soft_max=32,
-    )
-    resolution_length: bpy.props.IntProperty(
-        name="Length Resolution",
-        description="The amount of subdivisions over the length of the cylinder. Higher is more precise, lower is faster.",
-        min=1,
-        soft_max=32,
-    )
+    if TYPE_CHECKING:
+        angle1: bpy.types.FloatProperty
+        angle2: bpy.types.FloatProperty
+        smoothness_angle1: bpy.types.FloatProperty
+        smoothness_angle2: bpy.types.FloatProperty
+        smoothness_cap1: bpy.types.FloatProperty
+        smoothness_cap2: bpy.types.FloatProperty
+        resolution_arc: bpy.types.IntProperty
+        resolution_length: bpy.types.IntProperty
+    else:
+        angle1: bpy.props.FloatProperty(
+            name="Angle 1",
+            description="The starting angle of a hingejoint.",
+            min=-math.pi,
+            max=math.pi,
+            step=0.1 * math.pi,
+        )
+        angle2: bpy.props.FloatProperty(
+            name="Angle 2",
+            description="The ending angle of a hingejoint.",
+            min=-math.pi,
+            max=math.pi,
+            step=0.1 * math.pi,
+        )
+        smoothness_angle1: bpy.props.FloatProperty(
+            name="Angle 1 Smoothness",
+            description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the wedge's start angle.",
+            min=0.0,
+            max=10.0,
+            step=0.1,
+        )
+        smoothness_angle2: bpy.props.FloatProperty(
+            name="Angle 2 Smoothness",
+            description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the wedge's end angle.",
+            min=0.0,
+            max=10.0,
+            step=0.1,
+        )
+        smoothness_cap1: bpy.props.FloatProperty(
+            name="Cap 1 Smoothness",
+            description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the cylinder's start cap.",
+            min=0.0,
+            max=10.0,
+            step=0.1,
+        )
+        smoothness_cap2: bpy.props.FloatProperty(
+            name="Cap 2 Smoothness",
+            description="The amount of blending between the hinge joint's articular surface and the surrounding bone at the cylinder's end cap.",
+            min=0.0,
+            max=10.0,
+            step=0.1,
+        )
+        resolution_arc: bpy.props.IntProperty(
+            name="Arc Resolution",
+            description="The amount of subdivisions over the arc of the cylinder. Higher is more precise, lower is faster.",
+            min=1,
+            soft_max=32,
+        )
+        resolution_length: bpy.props.IntProperty(
+            name="Length Resolution",
+            description="The amount of subdivisions over the length of the cylinder. Higher is more precise, lower is faster.",
+            min=1,
+            soft_max=32,
+        )
 
 
 class ARF_JointProperties(bpy.types.PropertyGroup):
