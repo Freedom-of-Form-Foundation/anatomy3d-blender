@@ -2,6 +2,7 @@
 
 import bpy
 from typing import Optional, Sequence
+from ..tree_context_manager import GeoscriptContext
 
 
 class NodeHandle:
@@ -150,25 +151,23 @@ class AbstractSocket:
                 Two or more AbstractSockets in socket_list belong to different
                 node trees.
 
-            TypeError:
+            Exception:
                 socket_list contains no AbstractSockets.
         """
-        node_tree: Optional[bpy.types.NodeTree] = None
+        node_tree = GeoscriptContext.get_current_bl_node_tree()
         for i in socket_list:
             if isinstance(i, AbstractSocket):
-                if node_tree is None:
-                    node_tree = i.node_tree
-
                 if node_tree != i.node_tree:
                     raise ValueError(
                         "Attempting to perform an operation on"
-                        " nodes that belong to different node trees."
+                        " nodes outside of the appropriate geoscript context. Did you"
+                        " forget a 'with' statement? Tree 1: ",
+                        node_tree, ", Tree 2: ", i.node_tree
                     )
 
         if node_tree is None:
-            raise TypeError(
-                "Cannot add a new node to node tree without at"
-                " least one input connection."
+            raise Exception(
+                "You cannot use geoscript outside of a geoscript context."
             )
 
         return node_tree

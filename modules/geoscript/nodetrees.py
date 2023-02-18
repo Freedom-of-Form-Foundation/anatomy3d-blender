@@ -3,6 +3,7 @@
 from typing import Any, Tuple, Optional
 import bpy
 
+from .tree_context_manager import GeoscriptContext
 from .types import (
     NodeHandle,
     AbstractSocket,
@@ -20,17 +21,27 @@ class GeometryNodeTree:
     def __init__(self, name: str):
         self.__create_or_overwrite_bl_tree(name)
 
-        # TODO: removing the inputs and outputs of the pre-existing tree will reset all
-        # parameters. This should be fixed to prevent having to redo the parameters if
-        # the user changed them.
+        with GeoscriptContext(self.node_tree):
+            # TODO: removing the inputs and outputs of the pre-existing tree will reset
+            # all parameters. This should be fixed to prevent having to redo the
+            # parameters if the user changed them.
 
-        self.inputs = self.Inputs(self.node_tree)
-        self.outputs = self.Outputs(self.node_tree)
-        self.attributes = self.Attributes(self.node_tree)
+            self.inputs = self.Inputs(self.node_tree)
+            self.outputs = self.Outputs(self.node_tree)
+            self.attributes = self.Attributes(self.node_tree)
 
-        self.function()
+            self.function()
 
-        self.beautify_node_tree()
+            self.beautify_node_tree()
+
+        self.geoscript_context = GeoscriptContext(self.node_tree)
+
+    def __enter__(self):
+        self.geoscript_context.__enter__()
+        return self
+
+    def __exit__(self, exception_type, value, traceback):
+        self.geoscript_context.__exit__(exception_type, value, traceback)
 
     def function(self) -> Any:
         """The Geoscript code that represents the node tree.

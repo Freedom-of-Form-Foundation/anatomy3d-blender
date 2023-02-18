@@ -4,6 +4,7 @@ import bpy
 
 from typing import List
 from .nodetrees import GeometryNodeTree
+from .tree_context_manager import GeoscriptContext
 from .types import AbstractSocket, Scalar, Vector3, Boolean, Geometry
 
 
@@ -56,13 +57,13 @@ class GeometryNodeFunction(GeometryNodeTree):
 
 
 def generate_unique_name(f):
-    modules = f.__module__.split('.geoscript.')
+    modules = f.__module__.split(".geoscript.")
     prefix = "[common] " if len(modules) > 1 else "[script] "
     unique_name = prefix + modules[-1] + ":" + f.__qualname__
 
     # Blender truncates names longer than 63 characters.
     if len(unique_name) > 63:
-        unique_name = prefix + unique_name[-(63 - len(prefix)):]
+        unique_name = prefix + unique_name[-(63 - len(prefix)) :]
 
     return unique_name
 
@@ -80,43 +81,44 @@ def geometry_function(f):
 
         # TODO: Detect if the node tree already is registered.
 
-        # Detect the required node inputs from the function's arguments list:
-        for name in f.__annotations__:
-            annotation = f.__annotations__[name]
+        with GeoscriptContext(script.get_bl_tree()):
+            # Detect the required node inputs from the function's arguments list:
+            for name in f.__annotations__:
+                annotation = f.__annotations__[name]
 
-            if name == "return":
-                continue
+                if name == "return":
+                    continue
 
-            # Add the node input:
-            if annotation == Scalar or annotation == Scalar | float:
-                inputs.append(script.inputs.add_float(name))
-            elif annotation == Vector3:
-                inputs.append(script.inputs.add_vector(name))
-            elif annotation == Geometry:
-                inputs.append(script.inputs.add_geometry(name))
-            else:
-                raise TypeError(
-                    "Geometry functions must have arguments"
-                    " of type Scalar, Vector3, Geometry. Arguments of"
-                    " type {} are not supported.".format(annotation)
-                )
+                # Add the node input:
+                if annotation == Scalar or annotation == Scalar | float:
+                    inputs.append(script.inputs.add_float(name))
+                elif annotation == Vector3:
+                    inputs.append(script.inputs.add_vector(name))
+                elif annotation == Geometry:
+                    inputs.append(script.inputs.add_geometry(name))
+                else:
+                    raise TypeError(
+                        "Geometry functions must have arguments"
+                        " of type Scalar, Vector3, Geometry. Arguments of"
+                        " type {} are not supported.".format(annotation)
+                    )
 
-        # TODO: Raise error when there is an argument that isn't annotated.
+            # TODO: Raise error when there is an argument that isn't annotated.
 
-        # Generate the node tree:
-        output = f(*inputs)
+            # Generate the node tree:
+            output = f(*inputs)
 
-        # Add the node output:
-        if isinstance(output, Scalar):
-            script.outputs.add_float(output, name)
-        elif isinstance(output, Vector3):
-            script.outputs.add_vector(output, name)
-        elif isinstance(output, Boolean):
-            script.outputs.add_boolean(output, name)
-        elif isinstance(output, Geometry):
-            script.outputs.add_geometry(output, name)
+            # Add the node output:
+            if isinstance(output, Scalar):
+                script.outputs.add_float(output, name)
+            elif isinstance(output, Vector3):
+                script.outputs.add_vector(output, name)
+            elif isinstance(output, Boolean):
+                script.outputs.add_boolean(output, name)
+            elif isinstance(output, Geometry):
+                script.outputs.add_geometry(output, name)
 
-        script.beautify_node_tree()
+            script.beautify_node_tree()
 
         # Return a handle to the geometry script, which is callable. When the
         # script is called using __call__, it returns a handle to a newly
