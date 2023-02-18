@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from typing import Any, Tuple, Optional
 import bpy
 
 from .types import (
@@ -31,7 +32,7 @@ class GeometryNodeTree:
 
         self.beautify_node_tree()
 
-    def function(self) -> any:
+    def function(self) -> Any:
         """The Geoscript code that represents the node tree.
 
         This should be completed in a subclass and should contain Geoscript code.
@@ -101,27 +102,114 @@ class GeometryNodeTree:
 
         def _add_input(
             self, input_name: str, socket_class: type, socket_typename: str
-        ) -> AbstractSocket:
-            self.bl_node_tree.inputs.new(socket_typename, input_name)
+        ) -> Tuple[AbstractSocket, bpy.types.NodeSocketInterface]:
+            bl_socket = self.bl_node_tree.inputs.new(socket_typename, input_name)
             node_handle = NodeHandle(self.bl_node_tree, self.group_input)
             socket = socket_class(node_handle, self.input_counter)
             self.input_counter += 1
+            return socket, bl_socket
+
+        def add_geometry(self, name: str = "Geometry", tooltip: str = "") -> Geometry:
+            socket, bl_socket = self._add_input(name, Geometry, "NodeSocketGeometry")
+            assert isinstance(socket, Geometry)
+            bl_socket.description = tooltip
             return socket
 
-        def add_geometry(self, name: str = "Geometry") -> Geometry:
-            return self._add_input(name, Geometry, "NodeSocketGeometry")
+        def add_object(
+            self,
+            name: str = "Object",
+            tooltip: str = "",
+            default_value: Optional[bpy.types.Object] = None,
+        ) -> Object:
+            socket, bl_socket = self._add_input(name, Object, "NodeSocketObject")
+            assert isinstance(bl_socket, bpy.types.NodeSocketInterfaceObject)
+            assert isinstance(socket, Object)
+            bl_socket.description = tooltip
+            if isinstance(default_value, bpy.types.Object):
+                bl_socket.default_value = default_value
+            return socket
 
-        def add_boolean(self, name: str = "Boolean") -> Boolean:
-            return self._add_input(name, Boolean, "NodeSocketBool")
+        def add_boolean(
+            self,
+            name: str = "Boolean",
+            tooltip: str = "",
+            attribute_domain: str = "POINT",
+            default_attribute_name: str = "",
+            default_value: bool = False,
+        ) -> Boolean:
+            socket, bl_socket = self._add_input(name, Boolean, "NodeSocketBool")
+            assert isinstance(bl_socket, bpy.types.NodeSocketInterfaceBool)
+            assert isinstance(socket, Boolean)
+            bl_socket.description = tooltip
+            bl_socket.attribute_domain = attribute_domain
+            bl_socket.default_attribute_name = default_attribute_name
+            bl_socket.default_value = default_value
+            return socket
 
-        def add_float(self, name: str = "Float") -> Scalar:
-            return self._add_input(name, Scalar, "NodeSocketFloat")
+        def add_float(
+            self,
+            name: str = "Float",
+            tooltip: str = "",
+            attribute_domain: str = "POINT",
+            default_attribute_name: str = "",
+            default_value: float = 0.0,
+            min_value: float = float("-inf"),
+            max_value: float = float("inf"),
+        ) -> Scalar:
+            socket, bl_socket = self._add_input(name, Scalar, "NodeSocketFloat")
+            assert isinstance(bl_socket, bpy.types.NodeSocketInterfaceFloat)
+            assert isinstance(socket, Scalar)
+            bl_socket.description = tooltip
+            bl_socket.attribute_domain = attribute_domain
+            bl_socket.default_attribute_name = default_attribute_name
+            bl_socket.default_value = default_value
+            bl_socket.min_value = min_value
+            bl_socket.max_value = max_value
+            return socket
 
-        def add_vector(self, name: str = "Vector") -> Vector3:
-            return self._add_input(name, Vector3, "NodeSocketVector")
+        def add_integer(
+            self,
+            name: str = "Integer",
+            tooltip: str = "",
+            attribute_domain: str = "POINT",
+            default_attribute_name: str = "",
+            default_value: int = 0,
+            min_value: int = 0,
+            max_value: int = 0,
+        ) -> Scalar:
+            socket, bl_socket = self._add_input(name, Scalar, "NodeSocketInt")
+            assert isinstance(bl_socket, bpy.types.NodeSocketInterfaceInt)
+            assert isinstance(socket, Scalar)
+            bl_socket.description = tooltip
+            bl_socket.attribute_domain = attribute_domain
+            bl_socket.default_attribute_name = default_attribute_name
+            bl_socket.default_value = default_value
+            bl_socket.min_value = min_value
+            bl_socket.max_value = max_value
+            return socket
 
-        def add_object(self, name: str = "Object") -> Object:
-            return self._add_input(name, Object, "NodeSocketObject")
+        def add_vector(
+            self,
+            name: str = "Vector",
+            tooltip: str = "",
+            attribute_domain: str = "POINT",
+            default_attribute_name: str = "",
+            default_value=[0.0, 0.0, 0.0],
+            min_value: float = float("-inf"),
+            max_value: float = float("inf"),
+        ) -> Vector3:
+            socket, bl_socket = self._add_input(name, Vector3, "NodeSocketVector")
+            assert isinstance(bl_socket, bpy.types.NodeSocketInterfaceVector)
+            assert isinstance(socket, Vector3)
+            bl_socket.description = tooltip
+            bl_socket.attribute_domain = attribute_domain
+            bl_socket.default_attribute_name = default_attribute_name
+            if len(default_value) != 3:
+                raise ValueError("default_value is not an array of size 3.")
+            bl_socket.default_value = default_value
+            bl_socket.min_value = min_value
+            bl_socket.max_value = max_value
+            return socket
 
     class Outputs:
         """Handles adding new tree outputs to the node tree."""
@@ -148,9 +236,7 @@ class GeometryNodeTree:
         def add_geometry(self, variable: Geometry, name: str, tooltip: str = ""):
             output = self.bl_node_tree.outputs.new("NodeSocketGeometry", name)
             output.description = tooltip
-
             self._add_output(variable)
-
             return output
 
         def add_boolean(
@@ -162,14 +248,13 @@ class GeometryNodeTree:
             default_attribute_name: str = "",
             default_value: bool = False,
         ):
-            output = self.bl_node_tree.outputs.new("NodeSocketFloat", name)
+            output = self.bl_node_tree.outputs.new("NodeSocketBool", name)
+            assert isinstance(output, bpy.types.NodeSocketInterfaceBool)
             output.description = tooltip
             output.attribute_domain = attribute_domain
             output.default_attribute_name = default_attribute_name
             output.default_value = default_value
-
             self._add_output(variable)
-
             return output
 
         def add_float(
@@ -183,17 +268,37 @@ class GeometryNodeTree:
             min_value: float = float("-inf"),
             max_value: float = float("inf"),
         ):
-
             output = self.bl_node_tree.outputs.new("NodeSocketFloat", name)
+            assert isinstance(output, bpy.types.NodeSocketInterfaceFloat)
             output.description = tooltip
             output.attribute_domain = attribute_domain
             output.default_attribute_name = default_attribute_name
             output.default_value = default_value
             output.min_value = min_value
             output.max_value = max_value
-
             self._add_output(variable)
+            return output
 
+        def add_integer(
+            self,
+            variable: Scalar,
+            name: str,
+            tooltip: str = "",
+            attribute_domain: str = "POINT",
+            default_attribute_name: str = "",
+            default_value: int = 0,
+            min_value: int = 0,
+            max_value: int = 0,
+        ):
+            output = self.bl_node_tree.outputs.new("NodeSocketFloat", name)
+            assert isinstance(output, bpy.types.NodeSocketInterfaceFloat)
+            output.description = tooltip
+            output.attribute_domain = attribute_domain
+            output.default_attribute_name = default_attribute_name
+            output.default_value = default_value
+            output.min_value = min_value
+            output.max_value = max_value
+            self._add_output(variable)
             return output
 
         def add_vector(
@@ -209,6 +314,7 @@ class GeometryNodeTree:
         ):
 
             output = self.bl_node_tree.outputs.new("NodeSocketVector", name)
+            assert isinstance(output, bpy.types.NodeSocketInterfaceVector)
             output.description = tooltip
             output.attribute_domain = attribute_domain
             output.default_attribute_name = default_attribute_name
