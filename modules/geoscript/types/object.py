@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from typing import Optional
 import bpy
 
 from .abstract_socket import AbstractSocket
@@ -24,8 +25,8 @@ class Object(AbstractSocket):
     # "Object Info" in Blender:
     def get_geometry(
         self,
-        as_instance: Boolean = None,
-        relative: bool = False,
+        as_instance: Optional[Boolean] = None,
+        relative: Optional[bool] = False,
     ):
         """Get the geometry contained within this object.
 
@@ -55,8 +56,8 @@ class Object(AbstractSocket):
 
     def get_location(
         self,
-        as_instance: Boolean = None,
-        relative: bool = False,
+        as_instance: Optional[Boolean] = None,
+        relative: Optional[bool] = False,
     ):
         """Get the location of this object.
 
@@ -86,8 +87,8 @@ class Object(AbstractSocket):
 
     def get_rotation(
         self,
-        as_instance: Boolean = None,
-        relative: bool = False,
+        as_instance: Optional[Boolean] = None,
+        relative: Optional[bool] = False,
     ):
         """Get the Euler rotation of this object.
 
@@ -117,8 +118,8 @@ class Object(AbstractSocket):
 
     def get_scale(
         self,
-        as_instance: Boolean = None,
-        relative: bool = False,
+        as_instance: Optional[Boolean] = None,
+        relative: Optional[bool] = False,
     ):
         """Get the scaling vector of this object.
 

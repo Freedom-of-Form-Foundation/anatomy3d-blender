@@ -2,6 +2,7 @@
 
 import bpy
 from typing import Optional, Sequence
+from ..tree_context_manager import GeoscriptContext
 
 
 class NodeHandle:
@@ -11,20 +12,15 @@ class NodeHandle:
         self,
         node_tree: bpy.types.NodeTree,
         blender_node: bpy.types.Node,
-        layer: int = 0,
     ):
         self.__node_tree = node_tree
         self.__blender_node = blender_node
-        self.__layer = layer
 
     def get_bl_tree(self) -> bpy.types.NodeTree:
         return self.__node_tree
 
     def get_bl_node(self) -> bpy.types.Node:
         return self.__blender_node
-
-    def get_layer(self) -> int:
-        return self.__layer
 
     def get_input(self, index: int) -> bpy.types.NodeSocket:
         return self.__blender_node.inputs[index]
@@ -118,8 +114,8 @@ class AbstractSocket:
         #    node_tree = bpy.types.GeometryNodeTree()
 
         self.node_tree = node_handle.get_bl_tree()
+        self.bl_node_reference = node_handle.get_bl_node()
         self.socket_reference = node_handle.get_output(output_index)
-        self.layer = node_handle.get_layer()
 
     @staticmethod
     def get_bl_idnames() -> list[str]:
@@ -155,38 +151,35 @@ class AbstractSocket:
                 Two or more AbstractSockets in socket_list belong to different
                 node trees.
 
-            TypeError:
+            Exception:
                 socket_list contains no AbstractSockets.
         """
-        node_tree: Optional[bpy.types.NodeTree] = None
+        node_tree = GeoscriptContext.get_current_bl_node_tree()
         for i in socket_list:
             if isinstance(i, AbstractSocket):
-                if node_tree is None:
-                    node_tree = i.node_tree
-
                 if node_tree != i.node_tree:
                     raise ValueError(
                         "Attempting to perform an operation on"
-                        " nodes that belong to different node trees."
+                        " nodes outside of the appropriate geoscript context. Did you"
+                        " forget a 'with' statement? Tree 1: ",
+                        node_tree, ", Tree 2: ", i.node_tree
                     )
 
         if node_tree is None:
-            raise TypeError(
-                "Cannot add a new node to node tree without at"
-                " least one input connection."
+            raise Exception(
+                "You cannot use geoscript outside of a geoscript context."
             )
 
         return node_tree
 
     @staticmethod
-    def __get_outermost_layer(socket_list: Sequence[object], default: int = 0):
-        """Gets the visual layer position of rightmost AbstractSocket.
+    def __get_outermost_x(socket_list: Sequence[object], default: float = 0) -> float:
+        """Gets the visual x position of rightmost AbstractSocket.
 
-        Finds the layer index of the AbstractSocket in socket_list that is
+        Finds the x position of the AbstractSocket in socket_list that is
         positioned the furthest to the right in Blender's visual node tree
-        representation. The layer index helps to position the node for display
-        purposes. This is purely cosmetic, and the layer index has no effect on
-        the function of the nodes involved.
+        representation. This is purely cosmetic, and the layer index has no
+        effect on the function of the nodes involved.
 
         Args:
             socket_list:
@@ -194,20 +187,21 @@ class AbstractSocket:
                 entries can be any object or value, including None, and will
                 be ignored.
             default:
-                The layer that this function should return if there are no
+                The x position that this function should return if there are no
                 AbstractSockets in socket_list.
 
         Returns:
-            An int that represents the rightmost layer that an AbstractSocket
-            inside socket_list is in, or the default value if there are no
-            AbstractSockets inside socket_list.
+            A float that represents the x position of the rightmost Blender
+            node, or the default value if there are no AbstractSockets inside
+            socket_list.
         """
-        max_layer = default
+        max_x = default
         for i in socket_list:
             if isinstance(i, AbstractSocket):
-                max_layer = max(max_layer, i.layer)
+                current_x = i.bl_node_reference.location[0]
+                max_x = max(max_x, current_x)
 
-        return max_layer
+        return max_x
 
     @staticmethod
     def new_node(input_list, node_type: str = "") -> NodeHandle:
@@ -229,15 +223,15 @@ class AbstractSocket:
         """
         # First calculate which is the rightmost layer of the input sockets:
         node_tree = AbstractSocket.__get_node_tree(input_list)
-        max_layer = AbstractSocket.__get_outermost_layer(input_list)
+        max_x = AbstractSocket.__get_outermost_x(input_list)
 
-        new_layer = max_layer + 1
+        new_x = max_x + 200.0
 
         # Then create a new node to the right of that rightmost layer:
         new_node = node_tree.nodes.new(node_type)
-        new_node.location = (200.0 * new_layer, 0.0)
+        new_node.location = (new_x, 0.0)
 
-        return NodeHandle(node_tree, new_node, new_layer)
+        return NodeHandle(node_tree, new_node)
 
     @staticmethod
     def add_linked_node(

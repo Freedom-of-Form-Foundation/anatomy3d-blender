@@ -111,13 +111,13 @@ during the creation of the inputs and outputs. An example of a good Geoscript
 input would be a parameter that the user is meant to manipulate, such as the
 width of a bone as a scalar value.
 
-We can add such inputs by calling `GeometryFunction.Input<Type>()`, where `<Type>`
+We can add such inputs by calling `GeometryFunction.inputs.add_<type>()`, where `<type>`
 must be replaced by the appropriate variable type.
 
 For example, you can add a `geometry`-type input by adding the following line to
 our `__init__` function:
 ```python3
-        main_input = self.InputGeometry()
+        main_input = self.inputs.add_geometry()
 ```
 A reference to the input variable will be stored in `main_input`, so that you can
 use the input in later calculations. Calling this function will also add an input
@@ -131,15 +131,15 @@ have this constraint.
 
 We can add other types of inputs as well, like this:
 ```python3
-        user_editable_input1 = self.InputFloat('Width of a bone')
+        user_editable_input1 = self.inputs.add_float('Width of a bone')
 ```
 You can specify a user-readable name for the input, as this input will also be displayed
 in the user interface upon creation.
 
 ### Doing calculations using our inputs
 Now that we have our inputs, we can begin to manipulate our inputs. You can use the
-object returned by `InputFloat` as if they were of type `float`, and similarly you
-can use objects returned by `InputVector` as if they were 3D vectors. For example,
+object returned by `inputs.add_float` as if they were of type `float`, and similarly you
+can use objects returned by `inputs.add_vector` as if they were 3D vectors. For example,
 you can do this:
 ```python3
 class ExampleFunction(GeometryFunction):
@@ -149,21 +149,29 @@ class ExampleFunction(GeometryFunction):
         super().__init__(name)
 
         # Add new nodes to the tree:
-        input = self.InputGeometry()
-        variable = self.InputFloat('Float Input')
-        vector1 = self.InputVector('Vector Input')
+        input = self.inputs.add_geometry()
+        variable = self.inputs.add_float('Float Input')
+        vector1 = self.inputs.add_vector('Vector Input')
 
         variable2 = variable + 3.0
         variable3 = variable2 + variable
         variable4 = 4.0 + variable2
         variable5 = variable + (3.0 + 2.0) * variable
 
-        vector2 = vector1 + vector1
+        my_output_vector = vector1 + vector1
+        
+        self.outputs.add_vector(my_output_vector, 'My output vector')
 ```
 
 ### Adding outputs
 After we have done our calculations, we want to return the values to exit the function.
-This can be done by defining outputs.
+This can be done by defining outputs, like as follows.
+
+```python3
+        self.outputs.add_vector(my_output_vector, 'My output vector')
+```
+
+Such a function exists for every type of output.
 
 <Note: work in progress.>
 
@@ -176,10 +184,9 @@ class ExampleFunction(GeometryFunction):
         super().__init__(name)
 
         # Add new nodes to the tree:
-        input = self.InputGeometry()
-        output = self.OutputGeometry()
-        variable = self.InputFloat('Float Input')
-        vector1 = self.InputVector('Vector Input')
+        input = self.inputs.add_geometry()
+        variable = self.inputs.add_float('Float Input')
+        vector1 = self.inputs.add_vector('Vector Input')
 
         variable2 = variable + 3.0
         variable3 = variable2 + variable
@@ -187,12 +194,27 @@ class ExampleFunction(GeometryFunction):
         variable5 = variable + (3.0 + 2.0) * variable
 
         vector2 = vector1 + vector1
+        
+        self.outputs.add_vector(vector2, 'My output vector')
 ```
 
 ## How does it work?
 
 This plugin works as follows:
 
-Each arithmetic type, such as a Float or a Vector, is represented as a class. The arithmetic operators, such as `+`, `-`, `*` or `/` are implemented in these classes. The overloaded operators do not perform any calculations when they're called, instead they generate the appropriate piece of the node tree that represents the mathematical operation. In essence, the code is 'compiled' while you write it, and not executed until Blender uses it internally. As a result, there is no need to worry about performance in this code, since none of the code is run once the graph has built and the geometry modifier is run.
+Each arithmetic type, such as a Float or a Vector, is represented as a class. The
+arithmetic operators, such as `+`, `-`, `*` or `/` are implemented in these classes.
+The overloaded operators do not perform any calculations when they're called, instead
+they generate the appropriate piece of the node tree that represents the mathematical
+operation. In essence, the code is 'compiled' while you write it, and not executed
+until Blender uses it internally. As a result, there is no need to worry about
+performance in this code, since none of the code is run once the graph has built
+and the geometry modifier is run.
 
-This commit introduces the types `Scalar` and `Vector`, which are the main types that are used for most operations in a node tree. These classes inherit from `AbstractSocket`, and `AbstractTensor`, which are classes that handle the general functionality of variables inside Geoscript code. This commit also introduces the class `GeometryFunction`, which is the main entry point that developers can subclass to implement their own custom Geoscript functions. A `GeometryFunction` takes the role of a Geometry Nodes tree, but instead written in code form.
+This commit introduces the types `Scalar` and `Vector`, which are the main types
+that are used for most operations in a node tree. These classes inherit from
+`AbstractSocket`, and `AbstractTensor`, which are classes that handle the general
+functionality of variables inside Geoscript code. This commit also introduces the
+class `GeometryFunction`, which is the main entry point that developers can subclass
+to implement their own custom Geoscript functions. A `GeometryFunction` takes the
+role of a Geometry Nodes tree, but instead written in code form.

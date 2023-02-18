@@ -2,7 +2,7 @@
 
 import bpy
 
-from typing import Tuple
+from typing import Tuple, Optional
 from .abstract_socket import AbstractSocket, NodeHandle
 from .vector3 import Vector3
 from .scalar import Scalar
@@ -25,9 +25,9 @@ class Geometry(AbstractSocket):
     # "Set Position" in Blender:
     def move_vertices(
         self,
-        position: Vector3 = None,
-        offset: Vector3 = None,
-        selection: Boolean = None,
+        position: Optional[Vector3] = None,
+        offset: Optional[Vector3] = None,
+        selection: Optional[Boolean] = None,
     ):
         """Moves vertices in the geometry to a different position.
 
@@ -55,7 +55,7 @@ class Geometry(AbstractSocket):
         return Geometry(node, 0)
 
     # "Set ID":
-    def set_id(self, id: Scalar | int, selection: Boolean = None):
+    def set_id(self, id: Scalar | int, selection: Optional[Boolean] = None):
         """Sets the ID of the vertices in the geometry.
 
         Args:
@@ -79,7 +79,7 @@ class Geometry(AbstractSocket):
 
     # "Geometry Proximity" in Blender:
     def __get_closest(
-        self, target_element: str, source_position: Vector3 = None
+        self, target_element: str, source_position: Optional[Vector3] = None
     ) -> Tuple[Vector3, Scalar]:
         node = self.add_linked_node([self, source_position], "GeometryNodeProximity")
 
@@ -313,7 +313,7 @@ class Geometry(AbstractSocket):
     def __get_bounding_box_node(self) -> NodeHandle:
         previous_node = self.socket_reference.node
         if previous_node.bl_idname == "GeometryNodeBoundBox":
-            return NodeHandle(self.node_tree, previous_node, self.layer)
+            return NodeHandle(self.node_tree, previous_node)
         else:
             return AbstractSocket.add_linked_node([self], "GeometryNodeBoundBox")
 
@@ -460,4 +460,4 @@ class Geometry(AbstractSocket):
         bl_node.data_type = attribute_data_type
         bl_node.mapping = attribute_mapping
 
-        return self.RayHit(node.get_bl_tree(), node.get_bl_node(), node.get_layer())
+        return self.RayHit(node.get_bl_tree(), node.get_bl_node())
