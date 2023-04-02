@@ -203,17 +203,18 @@ def exp(value: Scalar) -> Scalar:
     return Scalar.math_operation_unary(value, operation="EXPONENT")
 
 
-def power(base: Scalar | float, exp: Scalar | float) -> Scalar:
-    """Takes the exponent of `value` with base `e` (Euler's number).
+def power(base: Scalar | float, exponent: Scalar | float) -> Scalar:
+    """Raises `base` to the power `exponent`.
 
     Args:
-        value: The input value.
+        base: The base.
+        exponent: The exponent.
 
     Returns:
         The result of the operation.
 
     """
-    return Scalar.math_operation_binary(base, exp, operation="POWER")
+    return Scalar.math_operation_binary(base, exponent, operation="POWER")
 
 
 def minimum(arg1: Scalar, arg2: Scalar | float) -> Scalar:

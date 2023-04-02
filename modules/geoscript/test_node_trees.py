@@ -50,8 +50,8 @@ class Tubercule(GeometryNodeTree):
         attributes = self.attributes
 
         # Inputs:
-        geometry = self.InputGeometry("Geometry")
-        tubercule_object = self.InputObject("Object")
+        geometry = self.inputs.add_geometry("Geometry")
+        tubercule_object = self.inputs.add_object("Object")
 
         # Code:
         tubercule_geometry = tubercule_object.get_geometry(relative=True)
@@ -61,7 +61,7 @@ class Tubercule(GeometryNodeTree):
         output = geometry.move_vertices(offset=offset)
 
         # Outputs:
-        self.OutputGeometry(output, "Geometry")
+        self.outputs.add_geometry(output, "Geometry")
 
 
 class LERP(GeometryNodeTree):
@@ -69,15 +69,15 @@ class LERP(GeometryNodeTree):
 
     def function(self):
         # Inputs:
-        vector1 = self.InputVector("Vector 1")
-        vector2 = self.InputVector("Vector 2")
-        mix = self.InputFloat("Mix")
+        vector1 = self.inputs.add_vector("Vector 1")
+        vector2 = self.inputs.add_vector("Vector 2")
+        mix = self.inputs.add_float("Mix")
 
         # Code:
         output = (1.0 - mix) * vector1 + mix * vector2
 
         # Outputs:
-        self.OutputVector(output, "Vector")
+        self.outputs.add_vector(output, "Vector")
 
 
 class NormalDistribution(GeometryNodeTree):
@@ -85,16 +85,16 @@ class NormalDistribution(GeometryNodeTree):
 
     def function(self):
         # Inputs:
-        x = self.InputFloat("x")
-        mu = self.InputFloat("mu")
-        sigma = self.InputFloat("sigma")
+        x = self.inputs.add_float("x")
+        mu = self.inputs.add_float("mu")
+        sigma = self.inputs.add_float("sigma")
 
         # Code:
         ex = (x - mu) / sigma
         output = 1.0 / (sigma * m.sqrt(2.0 * m.pi)) * g.exp(-0.5 * (ex * ex))
 
         # Outputs:
-        self.OutputFloat(output, "Normal Distribution")
+        self.outputs.add_float(output, "Normal Distribution")
 
 
 class ExampleFunction(GeometryNodeTree):
@@ -102,10 +102,10 @@ class ExampleFunction(GeometryNodeTree):
 
     def function(self):
         # Add new nodes to the tree:
-        input = self.InputGeometry()
-        variable = self.InputFloat("Float Input")
-        vector1 = self.InputVector("Vector Input")
-        boolean = self.InputBoolean("Boolean Input")
+        input = self.inputs.add_geometry()
+        variable = self.inputs.add_float("Float Input")
+        vector1 = self.inputs.add_vector("Vector Input")
+        boolean = self.inputs.add_boolean("Boolean Input")
 
         # geometry.py tests:
         geo1 = input.move_vertices(vector1, vector1, boolean)
@@ -152,7 +152,7 @@ class ExampleFunction(GeometryNodeTree):
         abc1 = normal_distribution(variable2, variable3, variable4)
         abc2 = lerp(vector1, vector2, 1.0)
 
-        self.OutputGeometry(geometry2, "Output Geometry")
-        self.OutputFloat(
+        self.outputs.add_geometry(geometry2, "Output Geometry")
+        self.outputs.add_float(
             variable8, "Float Output Name", attribute_domain="POINT", default_value=0.5
         )
